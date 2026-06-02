@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Корзина — Scent Perfume Bar</title>
+  <meta name="description" content="Ваша корзина — Scent Perfume Bar. Оформите заказ на нишевую и люксовую парфюмерию с доставкой по Казахстану." />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="canonical" href="https://scentperfumebar.kz/cart.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Scent Perfume Bar" />
+  <meta property="og:title" content="Корзина — Scent Perfume Bar" />
+  <meta property="og:url" content="https://scentperfumebar.kz/cart.html" />
+  <meta property="og:image" content="https://scentperfumebar.kz/assets/og-image.jpg" />
+
+  <!-- Schema.org Breadcrumb -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Главная", "item": "https://scentperfumebar.kz/" },
+      { "@type": "ListItem", "position": 2, "name": "Каталог", "item": "https://scentperfumebar.kz/catalog.html" },
+      { "@type": "ListItem", "position": 3, "name": "Корзина", "item": "https://scentperfumebar.kz/cart.html" }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/volume-selector.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+</head>
+<body>
+
+  <header class="header scrolled" id="header">
+    <nav class="nav container">
+      <a href="index.html" class="nav__logo">
+        <span class="nav__logo-text">SCENT</span>
+        <span class="nav__logo-dot">✦</span>
+        <span class="nav__logo-text">PERFUME</span>
+      </a>
+      <button class="nav__burger" id="navBurger" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav__links" id="navLinks">
+        <li><a href="index.html#about" class="nav__link">О нас</a></li>
+        <li><a href="catalog.html" class="nav__link">Каталог</a></li>
+        <li><a href="index.html#stores" class="nav__link">Магазины</a></li>
+        <li><a href="index.html#contacts" class="nav__link">Контакты</a></li>
+        <li>
+          <a href="cart.html" class="nav__cart" aria-label="Корзина">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            <span class="nav__cart-count" id="cartCount">0</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <p class="section__eyebrow">Ваш выбор</p>
+        <h1 class="page-hero__title">Корзина</h1>
+      </div>
+    </section>
+
+    <section class="cart-section">
+      <div class="container">
+
+        <!-- EMPTY STATE -->
+        <div class="cart-empty" id="cartEmpty" style="display:none">
+          <div class="cart-empty__icon">✦</div>
+          <h2>Корзина пуста</h2>
+          <p>Добавьте ароматы из каталога</p>
+          <a href="catalog.html" class="btn btn--gold">Перейти в каталог</a>
+        </div>
+
+        <!-- CART CONTENT -->
+        <div class="cart-layout" id="cartContent">
+          <div class="cart-items" id="cartItems">
+            <!-- filled by JS -->
+          </div>
+
+          <aside class="cart-summary" id="cartSummary">
+            <h2 class="cart-summary__title">Итого</h2>
+
+            <div class="cart-summary__lines" id="summaryLines">
+              <!-- filled by JS -->
+            </div>
+
+            <div class="cart-summary__total">
+              <span>Сумма заказа</span>
+              <span id="summaryTotal">0 ₸</span>
+            </div>
+
+            <p class="cart-summary__note">
+              Доставка рассчитывается при оформлении заказа через WhatsApp
+            </p>
+
+            <a href="checkout.html" class="btn btn--gold cart-summary__btn" id="checkoutBtn">
+              Оформить заказ
+            </a>
+
+            <a
+              href="#"
+              class="btn btn--outline cart-summary__btn"
+              id="whatsappOrderBtn"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+              Заказать через WhatsApp
+            </a>
+
+            <button class="cart-summary__clear" id="clearCartBtn">
+              Очистить корзину
+            </button>
+          </aside>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <p class="footer__logo">SCENT ✦ PERFUME</p>
+          <p class="footer__tagline">Нишевая & Люксовая Парфюмерия</p>
+        </div>
+        <nav class="footer__nav">
+          <a href="index.html">Главная</a>
+          <a href="catalog.html">Каталог</a>
+          <a href="index.html#contacts">Контакты</a>
+        </nav>
+      </div>
+      <div class="footer__bottom">
+        <p>© 2025 Scent Perfume Bar · Дом Парфюма.</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/77071210281" target="_blank" rel="noopener" class="whatsapp-float" aria-label="WhatsApp">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+  </a>
+
+  <script src="js/main.js"></script>
+  <script src="js/volume-selector.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script> 
+</body>
+</html>
