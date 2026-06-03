@@ -264,9 +264,7 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
 }
 
 /* ---- Mobile Drawer (снизу) ---- */
-/* Overlay + Drawer — только на мобиле */
 .nav__overlay {
-  display: none;
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
@@ -281,22 +279,44 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   border-radius: 20px 20px 0 0;
   z-index: 200;
   padding: 12px 24px 40px;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
+  /* Скрыт по умолчанию — за нижней границей экрана */
+  transform: translateY(110%);
+  visibility: hidden;
+  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1),
+              visibility 0s linear 0.35s;
+  will-change: transform;
+}
+.nav__drawer.open {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1),
+              visibility 0s linear 0s;
 }
 
-/* Десктоп: drawer и overlay скрыты */
+/* Overlay */
+.nav__overlay {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  visibility: hidden;
+}
+.nav__overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+
+/* Десктоп: всё скрыто */
 @media (min-width: 900px) {
   .nav__overlay { display: none !important; }
   .nav__drawer  { display: none !important; }
   .nav__burger  { display: none !important; }
 }
 
-/* Мобиль: открытые состояния */
+/* Мобиль */
 @media (max-width: 899px) {
-  .nav__overlay.open { display: block; }
-  .nav__drawer.open  { transform: translateY(0); }
-  .nav__links        { display: none !important; }
+  .nav__links { display: none !important; }
 }
 
 .nav__drawer-handle {
