@@ -98,6 +98,15 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   opacity: 1;
   transform: none;
 }
+/* На мобильных — сразу показываем всё без анимации.
+   Это устраняет баг когда кнопки не нажимаются до скролла. */
+@media (max-width: 900px) {
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
 
 /* === BUTTONS === */
 .btn {
