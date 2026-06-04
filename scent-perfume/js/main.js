@@ -145,10 +145,15 @@ function initMobileMenu() {
     bodyUnlock('drawer');
   }
 
-  burger.addEventListener('click', () => {
+  function toggleDrawer() {
     drawer.classList.contains('open') ? closeDrawer() : openDrawer();
-  });
+  }
+
+  burger.addEventListener('click', toggleDrawer);
+  burger.addEventListener('touchend', e => { e.preventDefault(); toggleDrawer(); }, { passive: false });
+
   overlay.addEventListener('click', closeDrawer);
+  overlay.addEventListener('touchend', e => { e.preventDefault(); closeDrawer(); }, { passive: false });
 
   // Swipe down to close
   let startY = 0;
@@ -159,6 +164,15 @@ function initMobileMenu() {
 
   drawer.querySelectorAll('.nav__drawer-link').forEach(link => {
     link.addEventListener('click', closeDrawer);
+    // Android fix: touchend для надёжного срабатывания ссылок в drawer
+    link.addEventListener('touchend', e => {
+      e.preventDefault();
+      const href = link.getAttribute('href');
+      closeDrawer();
+      if (href && href !== '#') {
+        setTimeout(() => { window.location.href = href; }, 50);
+      }
+    }, { passive: false });
   });
 }
 
