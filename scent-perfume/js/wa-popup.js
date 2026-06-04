@@ -71,6 +71,7 @@
   function closeWaPopup() {
     overlay.classList.remove('open');
     bodyUnlock('wa-popup');
+    if (window.releaseTaps) window.releaseTaps();
   }
 
   // Close on button or overlay click

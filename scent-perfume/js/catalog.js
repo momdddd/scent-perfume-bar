@@ -213,6 +213,7 @@ function openProductModal(id) {
   function closeModal() {
     overlay.classList.remove('open');
     bodyUnlock('modal');
+    if (window.releaseTaps) window.releaseTaps();
     setTimeout(() => overlay.remove(), 300);
   }
 }
@@ -359,6 +360,7 @@ function bindFilterEvents() {
       const isOpen = filtersPanel.classList.toggle('filters--open');
       filtersToggle.setAttribute('aria-expanded', isOpen);
       isOpen ? bodyLock('filters') : bodyUnlock('filters');
+      if (!isOpen && window.releaseTaps) window.releaseTaps();
     });
   }
 }

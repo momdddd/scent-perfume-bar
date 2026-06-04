@@ -1,32 +1,29 @@
 /* =============================================
-   BODY SCROLL LOCK
-   Простой вариант без position:fixed на body —
-   position:fixed ломает click-события на iOS
+   BODY SCROLL LOCK — надёжная версия
+   Не использует position:fixed и height на body
+   (они ломают тап-события на Android/iOS).
+   Блокируем скролл только через overflow на documentElement.
    ============================================= */
-(function() {
+(function () {
   const locks = new Set();
-  let scrollY = 0;
 
-  window.bodyLock = function(id) {
-    if (locks.size === 0) {
-      scrollY = window.scrollY;
-      document.body.style.overflow = 'hidden';
-      document.body.style.height = '100%';
-    }
+  window.bodyLock = function (id) {
     locks.add(id);
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
   };
 
-  window.bodyUnlock = function(id) {
+  window.bodyUnlock = function (id) {
     locks.delete(id);
     if (locks.size === 0) {
+      document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
-      document.body.style.height = '';
     }
   };
 
-  window.bodyUnlockAll = function() {
+  window.bodyUnlockAll = function () {
     locks.clear();
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    document.body.style.height = '';
   };
 })();

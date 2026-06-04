@@ -79,6 +79,7 @@ function closeVolumeSelector() {
   if (overlay) {
     overlay.classList.remove('open');
     bodyUnlock('volume');
+  if (window.releaseTaps) window.releaseTaps();
   }
 }
 
