@@ -184,3 +184,18 @@
   .insta-stores { width: calc(100vw - 40px); }
   .insta-float  { right: 16px; bottom: 20px; }
 }
+
+/* ── FIX: убираем блокировку кликов на мобиле ── */
+#instaFloat {
+  pointer-events: none;   /* контейнер прозрачен для кликов */
+}
+#instaFloat * {
+  pointer-events: auto;   /* все дочерние элементы кликабельны */
+}
+/* Скрытая панель не перехватывает события */
+.insta-stores {
+  pointer-events: none !important;
+}
+.insta-float--open .insta-stores {
+  pointer-events: auto !important;
+}
