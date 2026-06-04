@@ -278,7 +278,7 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
   inset: 0;
   background: rgba(0,0,0,0.6);
   z-index: 199;
-  backdrop-filter: blur(2px);
+  /* backdrop-filter убран — на iOS вызывал перехват тач-событий даже при pointer-events:none */
 }
 
 .nav__drawer {
@@ -302,18 +302,17 @@ button { background: none; border: none; cursor: pointer; font-family: inherit; 
               visibility 0s linear 0s;
 }
 
-/* Overlay */
+/* Overlay — display:none надёжнее чем visibility:hidden на iOS */
 .nav__overlay {
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-  visibility: hidden;
+  display: none;
 }
 .nav__overlay.open {
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-  transition: opacity 0.3s ease, visibility 0s linear 0s;
+  display: block;
+  animation: overlayFadeIn 0.3s ease forwards;
+}
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 /* Десктоп: всё скрыто */
