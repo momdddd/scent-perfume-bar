@@ -66,21 +66,23 @@ function renderCartItems(cart) {
     </div>
   `).join('');
 
-  // Bind qty buttons
-  container.querySelectorAll('.qty-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id     = btn.dataset.id;
-      const action = btn.dataset.action;
-      changeQty(id, action);
-    });
-  });
+  // Event delegation — Android fix
+  container.removeEventListener('click', cartContainerClick);
+  container.addEventListener('click', cartContainerClick);
+}
 
-  // Bind remove buttons
-  container.querySelectorAll('.cart-item__remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      removeFromCart(btn.dataset.id);
-    });
-  });
+function cartContainerClick(e) {
+  const qtyBtn = e.target.closest('.qty-btn[data-action]');
+  if (qtyBtn) {
+    e.preventDefault();
+    changeQty(qtyBtn.dataset.id, qtyBtn.dataset.action);
+    return;
+  }
+  const removeBtn = e.target.closest('.cart-item__remove[data-id]');
+  if (removeBtn) {
+    e.preventDefault();
+    removeFromCart(removeBtn.dataset.id);
+  }
 }
 
 /* =============================================
