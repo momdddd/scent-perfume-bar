@@ -72,6 +72,13 @@ function initParticles() {
 function initReveal() {
   const elements = document.querySelectorAll('.reveal');
   if (!elements.length) return;
+
+  // Если IntersectionObserver не поддерживается — просто показываем всё
+  if (!('IntersectionObserver' in window)) {
+    elements.forEach(el => el.classList.add('visible'));
+    return;
+  }
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -84,19 +91,27 @@ function initReveal() {
   }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
   elements.forEach(el => observer.observe(el));
 
-  // Mobile fix: IntersectionObserver may not fire for elements already in viewport on load
-  setTimeout(() => {
+  /* Мобильный фикс (Instagram/Safari in-app browser):
+     IntersectionObserver часто НЕ срабатывает для элементов, которые
+     уже видны при загрузке — поэтому кнопки в hero остаются невидимыми
+     (и не нажимаются) пока не сделаешь скролл.
+     Принудительно показываем всё, что в зоне видимости. */
+  function revealInViewport() {
     elements.forEach(el => {
-      if (!el.classList.contains('visible')) {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight && rect.bottom > 0) {
-          el.style.transitionDelay = '0ms';
-          el.classList.add('visible');
-          observer.unobserve(el);
-        }
+      if (el.classList.contains('visible')) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > -1) {
+        el.style.transitionDelay = '0ms';
+        el.classList.add('visible');
+        observer.unobserve(el);
       }
     });
-  }, 150);
+  }
+
+  // Сразу на следующем кадре + ещё раз после загрузки шрифтов/картинок
+  requestAnimationFrame(() => requestAnimationFrame(revealInViewport));
+  setTimeout(revealInViewport, 300);
+  window.addEventListener('load', revealInViewport, { once: true });
 }
 
 /* ─── HEADER ─────────────────────────────────────────────────── */

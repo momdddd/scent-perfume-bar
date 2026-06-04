@@ -161,8 +161,7 @@ function updateAuthNav() {
   // Update drawer profile link
   const drawerProfile = document.getElementById('drawerProfile');
   if (drawerProfile) {
-    const session = supabase.auth.session ? supabase.auth.session() : null;
-    if (session) {
+    if (user) {
       drawerProfile.textContent = 'Профиль';
       drawerProfile.href = 'account.html';
     } else {
