@@ -89,6 +89,14 @@ function initReveal() {
 function initHeader() {
   const header = document.getElementById('header');
   if (!header) return;
+
+  // FIX #2: На внутренних страницах класс scrolled стоит статично в HTML.
+  // Если его динамически убирать/добавлять при скролле — backdrop-filter
+  // на хедере мигает и ломает position:fixed у Drawer (backdrop-filter
+  // создаёт новый stacking context, и fixed-потомки прибиваются к хедеру).
+  // Решение: на таких страницах не трогаем класс вообще.
+  if (header.classList.contains('scrolled')) return;
+
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 40);
   }, { passive: true });
