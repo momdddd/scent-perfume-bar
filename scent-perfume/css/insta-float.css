@@ -185,17 +185,16 @@
   .insta-float  { right: 16px; bottom: 20px; }
 }
 
-/* ── FIX: убираем блокировку кликов на мобиле ── */
+/* ── FIX #1: контейнер не перехватывает клики в закрытом состоянии ── */
+/* Невидимая область .insta-stores растягивала контейнер и блокировала
+   кнопки Hero под ней. Решение: сам контейнер прозрачен для кликов,
+   кликабельны только реальные дочерние элементы (кнопка + открытая панель). */
 #instaFloat {
-  pointer-events: none;   /* контейнер прозрачен для кликов */
+  pointer-events: none;
 }
-#instaFloat * {
-  pointer-events: auto;   /* все дочерние элементы кликабельны */
-}
-/* Скрытая панель не перехватывает события */
-.insta-stores {
-  pointer-events: none !important;
+#instaFloat .insta-float__btn {
+  pointer-events: auto;
 }
 .insta-float--open .insta-stores {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
