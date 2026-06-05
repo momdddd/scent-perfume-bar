@@ -97,7 +97,7 @@ function validateStep1() {
 
 function validateStep2() {
   const delivery = document.querySelector('input[name="delivery"]:checked')?.value;
-  if (delivery !== 'delivery') return true;
+  if (delivery !== 'cdek' && delivery !== 'kazpost') return true;
   clearError('inputCity', 'errorCity');
   const cityErr = VALIDATORS.city(getVal('inputCity'));
   if (cityErr) { showError('inputCity', 'errorCity', cityErr); return false; }
@@ -108,13 +108,30 @@ function validateStep2() {
 function initDeliveryToggle() {
   const radios = document.querySelectorAll('input[name="delivery"]');
   if (!radios.length) return;
+
   function update() {
     const val = document.querySelector('input[name="delivery"]:checked')?.value;
-    const show = val === 'delivery';
-    document.getElementById('addressGroup') ?.style  && (document.getElementById('addressGroup').style.display  = show ? 'block' : 'none');
-    document.getElementById('addressGroup2')?.style  && (document.getElementById('addressGroup2').style.display = show ? 'block' : 'none');
-    document.getElementById('pickupGroup')  ?.style  && (document.getElementById('pickupGroup').style.display   = show ? 'none'  : 'block');
+    const showAddress = val === 'cdek' || val === 'kazpost';
+    const showPickup  = val === 'pickup';
+    const showOther   = val === 'other';
+
+    const ag  = document.getElementById('addressGroup');
+    const ag2 = document.getElementById('addressGroup2');
+    const pg  = document.getElementById('pickupGroup');
+    const og  = document.getElementById('otherGroup');
+
+    if (ag)  ag.style.display  = showAddress ? 'block' : 'none';
+    if (ag2) ag2.style.display = showAddress ? 'block' : 'none';
+    if (pg)  pg.style.display  = showPickup  ? 'block' : 'none';
+    if (og)  og.style.display  = showOther   ? 'block' : 'none';
+
+    // Город обязателен только для СДЭК/Казпочта
+    const cityInput = document.getElementById('inputCity');
+    if (cityInput) {
+      cityInput.required = showAddress;
+    }
   }
+
   radios.forEach(r => r.addEventListener('change', update));
   update();
 }
@@ -170,13 +187,20 @@ async function prefillFromProfile() {
   } catch { /* ignore */ }
 }
 
+
+/* ─── MAP DELIVERY TYPE ──────────────────────────────────────── */
+// БД принимает только 'delivery' или 'pickup'
+function mapDeliveryType(val) {
+  if (val === 'pickup') return 'pickup';
+  return 'delivery'; // cdek, kazpost, other → delivery
+}
+
 /* ─── SAVE ORDER TO SUPABASE ─────────────────────────────────── */
 async function saveOrderToDB(orderData) {
-  if (!isLoggedIn()) return null; // гостевой заказ — не сохраняем
-
   try {
-    const token  = getAccessToken();
-    const user   = getCurrentUser();
+    const loggedIn = isLoggedIn();
+    const token    = loggedIn ? getAccessToken() : SUPABASE_KEY;
+    const user     = loggedIn ? getCurrentUser() : null;
     const cart   = getCart();
     const storeNames = {
       karaganda: 'Scent Perfume Bar (Караганда)',
@@ -257,9 +281,20 @@ function buildOrderMessage() {
     `• ${i.brand} — ${i.name} (${i.volume}) × ${i.qty} = ${(i.price*i.qty).toLocaleString('ru')} ₸`
   ).join('\n');
   const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const deliveryInfo = delivery === 'delivery'
-    ? `\n📦 Доставка: ${city}${address ? ', ' + address : ''}`
-    : `\n🏪 Самовывоз: ${storeNames[store] || ''}`;
+  const deliveryLabels = {
+    cdek:    'СДЭК',
+    kazpost: 'Казпочта',
+    other:   'Другое (уточнить)',
+    pickup:  'Самовывоз'
+  };
+  let deliveryInfo;
+  if (delivery === 'cdek' || delivery === 'kazpost') {
+    deliveryInfo = `\n📦 Доставка (${deliveryLabels[delivery]}): ${city}${address ? ', ' + address : ''}`;
+  } else if (delivery === 'pickup') {
+    deliveryInfo = `\n🏪 Самовывоз: ${storeNames[store] || ''}`;
+  } else {
+    deliveryInfo = `\n❓ Способ доставки: уточнить с менеджером`;
+  }
   const msg =
     `Здравствуйте! Новый заказ с сайта:\n\n` +
     `👤 ${name}\n📞 ${phone}${deliveryInfo}\n\n` +
@@ -272,39 +307,129 @@ function buildOrderMessage() {
 /* ─── SHOW SUCCESS ───────────────────────────────────────────── */
 function showSuccess(orderData, dbOrderId) {
   goToStep(3);
-  const textEl     = document.getElementById('successText');
+  const textEl      = document.getElementById('successText');
   const paymentWrap = document.getElementById('paymentOptions');
 
   let text = `${orderData.name}, ваш заказ на ${orderData.total.toLocaleString('ru')} ₸ оформлен.`;
   if (dbOrderId) text += ` Номер заказа: #${dbOrderId}.`;
   if (textEl) textEl.textContent = text;
 
-  // Показываем кнопки оплаты
   if (paymentWrap) {
     paymentWrap.style.display = 'flex';
 
-    // Онлайн-оплата
+    // Показываем сумму на кнопке
+    const amountLabel = document.getElementById('payAmountLabel');
+    if (amountLabel) amountLabel.textContent = orderData.total.toLocaleString('ru') + ' ₸';
+
+    // Инициализируем табы
+    initPayTabs();
+
+    // Маски полей карты
+    initCardForm();
+
+    // Кнопка оплаты картой
     const payBtn = document.getElementById('payOnlineBtn');
-    if (payBtn && dbOrderId) {
+    if (payBtn) {
       payBtn.addEventListener('click', () => {
+        if (!validateCardForm()) return;
         payBtn.disabled = true;
-        payBtn.textContent = 'Переходим к оплате...';
-        initPayment(dbOrderId, orderData.total, {
-          name:  orderData.name,
-          phone: orderData.phone,
-        });
+        payBtn.textContent = 'Обработка...';
+        if (dbOrderId && typeof initPayment === 'function') {
+          initPayment(dbOrderId, orderData.total, { name: orderData.name, phone: orderData.phone });
+        }
+      });
+    }
+
+    // Kaspi
+    const kaspiBtn = document.getElementById('payKaspiBtn');
+    if (kaspiBtn) {
+      kaspiBtn.addEventListener('click', () => {
+        kaspiBtn.disabled = true;
+        kaspiBtn.textContent = 'Переходим в Kaspi...';
+        if (dbOrderId && typeof initPayment === 'function') {
+          initPayment(dbOrderId, orderData.total, { name: orderData.name, phone: orderData.phone });
+        }
       });
     }
 
     // WhatsApp
     const waBtn = document.getElementById('payWhatsappBtn');
-    if (waBtn) {
-      waBtn.href = `https://wa.me/77071210281?text=${encodeURIComponent(orderData.msg)}`;
-    }
+    if (waBtn) waBtn.href = `https://wa.me/77071210281?text=${encodeURIComponent(orderData.msg)}`;
   }
 
   localStorage.removeItem('scent_cart');
   updateCartCount();
+}
+
+/* ─── PAYMENT TABS ───────────────────────────────────────────── */
+function initPayTabs() {
+  const tabs = document.querySelectorAll('.pay-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('pay-tab--active'));
+      tab.classList.add('pay-tab--active');
+      document.querySelectorAll('.pay-panel').forEach(p => p.style.display = 'none');
+      const panel = document.getElementById('payPanel-' + tab.dataset.tab);
+      if (panel) panel.style.display = 'block';
+    });
+  });
+}
+
+/* ─── CARD FORM ──────────────────────────────────────────────── */
+function initCardForm() {
+  const numInput    = document.getElementById('cardNumber');
+  const holderInput = document.getElementById('cardHolder');
+  const expiryInput = document.getElementById('cardExpiry');
+
+  const numDisplay    = document.getElementById('cardNumberDisplay');
+  const holderDisplay = document.getElementById('cardHolderDisplay');
+  const expiryDisplay = document.getElementById('cardExpiryDisplay');
+  const brandDisplay  = document.getElementById('cardBrandIcon');
+
+  if (numInput) {
+    numInput.addEventListener('input', () => {
+      let v = numInput.value.replace(/\D/g, '').slice(0, 16);
+      numInput.value = v.replace(/(\d{4})/g, '$1 ').trim();
+      if (numDisplay) numDisplay.textContent = numInput.value.padEnd(19, '•').replace(/[0-9]/g, (c, i) => i < numInput.value.length ? c : '•') || '•••• •••• •••• ••••';
+      // Определяем систему
+      if (brandDisplay) {
+        const first = v[0];
+        if (first === '4') brandDisplay.textContent = 'VISA';
+        else if (first === '5') brandDisplay.textContent = 'MASTERCARD';
+        else if (v.startsWith('9870')) brandDisplay.textContent = 'KASPI';
+        else brandDisplay.textContent = '????';
+      }
+    });
+  }
+
+  if (holderInput) {
+    holderInput.addEventListener('input', () => {
+      holderInput.value = holderInput.value.toUpperCase().replace(/[^A-Z\s]/g, '');
+      if (holderDisplay) holderDisplay.textContent = holderInput.value || 'ИМЯ ФАМИЛИЯ';
+    });
+  }
+
+  if (expiryInput) {
+    expiryInput.addEventListener('input', () => {
+      let v = expiryInput.value.replace(/\D/g, '').slice(0, 4);
+      if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2);
+      expiryInput.value = v;
+      if (expiryDisplay) expiryDisplay.textContent = expiryInput.value || 'MM/YY';
+    });
+  }
+}
+
+function validateCardForm() {
+  const num    = (document.getElementById('cardNumber')?.value || '').replace(/\s/g, '');
+  const holder = document.getElementById('cardHolder')?.value?.trim() || '';
+  const expiry = document.getElementById('cardExpiry')?.value || '';
+  const cvv    = document.getElementById('cardCvv')?.value || '';
+
+  if (num.length < 16) { alert('Введите полный номер карты'); return false; }
+  if (holder.length < 2) { alert('Введите имя держателя карты'); return false; }
+  if (!/^\d{2}\/\d{2}$/.test(expiry)) { alert('Введите срок действия в формате MM/YY'); return false; }
+  if (cvv.length < 3) { alert('Введите CVV код'); return false; }
+  return true;
 }
 
 /* ─── INIT ───────────────────────────────────────────────────── */
