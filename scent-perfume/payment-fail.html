@@ -29,8 +29,23 @@
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
           <span class="nav__cart-count" id="cartCount">0</span>
         </a>
+        <button class="nav__burger" id="navBurger" aria-label="Открыть меню">
+          <span></span><span></span><span></span>
+        </button>
       </div>
     </nav>
+    <div class="nav__overlay" id="navOverlay"></div>
+    <div class="nav__drawer" id="navDrawer">
+      <div class="nav__drawer-handle"></div>
+      <ul class="nav__drawer-links">
+        <li><a href="catalog.html" class="nav__drawer-link">Каталог</a></li>
+        <li><a href="index.html#about" class="nav__drawer-link">О нас</a></li>
+        <li><a href="index.html#stores" class="nav__drawer-link">Магазины</a></li>
+        <li><a href="delivery.html" class="nav__drawer-link">Доставка</a></li>
+        <li><a href="login.html" class="nav__drawer-link" id="drawerProfile">Войти</a></li>
+        <li><a href="cart.html" class="nav__drawer-link nav__drawer-cart">Корзина <span class="nav__cart-count" id="cartCountDrawer">0</span></a></li>
+      </ul>
+    </div>
   </header>
 
   <main class="payment-status-main">
@@ -77,7 +92,29 @@
 
     </div>
   </main>
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <p class="footer__logo">SCENT ✦ PERFUME BAR</p>
+          <p class="footer__tagline">Нишевая & Люксовая Парфюмерия</p>
+        </div>
+        <nav class="footer__nav">
+          <a href="catalog.html">Каталог</a>
+          <a href="delivery.html">Доставка</a>
+          <a href="oferta.html">Оферта</a>
+          <a href="privacy.html">Конфиденциальность</a>
+          <a href="returns.html">Возврат</a>
+        </nav>
+      </div>
+      <div class="footer__bottom">
+        <p>© 2025 Scent Perfume Bar. Все права защищены.</p>
+        <p>Только оригинальная парфюмерия.</p>
+      </div>
+    </div>
+  </footer>
 
+  <script src="js/body-lock.js"></script>
   <script src="js/api.js"></script>
   <script src="js/main.js"></script>
   <script src="js/auth.js"></script>
