@@ -218,16 +218,17 @@ async function saveOrderToDB(orderData) {
         'Prefer': 'return=representation'
       },
       body: JSON.stringify({
-        user_id:        user.id,
+        user_id:         user?.id || null,
         customer_name:  sanitize(getVal('inputName')),
         customer_phone: sanitize(getVal('inputPhone')),
-        delivery_type:  orderData.delivery,
+        delivery_type:   mapDeliveryType(orderData.delivery),
         city:           sanitize(getVal('inputCity')) || null,
         address:        sanitize(getVal('inputAddress')) || null,
         pickup_store:   storeNames[store] || null,
         comment:        sanitize(getVal('inputComment')) || null,
         total_price:    cart.reduce((s, i) => s + i.price * i.qty, 0),
-        status:         'new'
+        status:         'new',
+        payment_status:  'pending'
       })
     });
 
