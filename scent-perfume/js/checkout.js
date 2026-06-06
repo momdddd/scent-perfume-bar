@@ -336,8 +336,14 @@ function showSuccess(orderData, dbOrderId) {
         if (!validateCardForm()) return;
         payBtn.disabled = true;
         payBtn.textContent = 'Обработка...';
-        if (dbOrderId && typeof initPayment === 'function') {
-          initPayment(dbOrderId, orderData.total, { name: orderData.name, phone: orderData.phone });
+        // Запускаем оплату даже если заказ не сохранился в БД (гость без аккаунта)
+        if (typeof initPayment === 'function') {
+          initPayment(dbOrderId || 0, orderData.total, { name: orderData.name, phone: orderData.phone });
+        } else {
+          // Fallback если payment.js не загружен
+          payBtn.disabled = false;
+          payBtn.textContent = 'Оплатить';
+          alert('Ошибка загрузки платёжного модуля. Попробуйте перезагрузить страницу.');
         }
       });
     }
