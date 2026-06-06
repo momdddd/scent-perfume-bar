@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Личный кабинет — Scent Perfume Bar</title>
+  <meta name="robots" content="noindex, nofollow" />
+
+  <link rel="icon" type="image/png" href="assets/logo-icon.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/cart.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+  <link rel="stylesheet" href="css/insta-float.css" />
+  <link rel="stylesheet" href="css/wa-popup.css" />
+</head>
+<body ontouchstart="">
+
+  <header class="header scrolled" id="header">
+        <nav class="nav container">
+      <a href="index.html" class="nav__logo">
+        <span class="nav__logo-text">SCENT</span>
+        <span class="nav__logo-dot">✦</span>
+        <span class="nav__logo-text">PERFUME BAR</span>
+      </a>
+            <ul class="nav__links" id="navLinks">
+        <li><a href="catalog.html" class="nav__link">Каталог</a></li>
+        <li><a href="index.html#about" class="nav__link">О нас</a></li>
+        <li><a href="index.html#stores" class="nav__link">Магазины</a></li>
+        <li><a href="delivery.html" class="nav__link">Доставка</a></li>
+      </ul>
+      <div class="nav__actions">
+        <a href="login.html" class="nav__profile" id="navProfile" aria-label="Профиль">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </a>
+        <a href="cart.html" class="nav__cart" aria-label="Корзина">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span class="nav__cart-count" id="cartCount">0</span>
+        </a>
+        <button class="nav__burger" id="navBurger" aria-label="Открыть меню">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+  <!-- Mobile drawer — вне <header>, иначе backdrop-filter ломает position:fixed -->
+  <div class="nav__overlay" id="navOverlay"></div>
+  <div class="nav__drawer" id="navDrawer">
+    <div class="nav__drawer-handle"></div>
+    <ul class="nav__drawer-links">
+      <li><a href="catalog.html" class="nav__drawer-link">Каталог</a></li>
+      <li><a href="index.html#about" class="nav__drawer-link">О нас</a></li>
+      <li><a href="index.html#stores" class="nav__drawer-link">Магазины</a></li>
+      <li><a href="login.html" class="nav__drawer-link" id="drawerProfile">Войти</a></li>
+      <li><a href="cart.html" class="nav__drawer-link nav__drawer-cart">Корзина <span class="nav__cart-count nav__cart-count--drawer" id="cartCount">0</span></a></li>
+    </ul>
+  </div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <p class="section__eyebrow">Мой профиль</p>
+        <h1 class="page-hero__title" id="accountTitle">Личный кабинет</h1>
+      </div>
+    </section>
+
+    <section class="account-section">
+      <div class="container">
+        <div class="account-layout">
+
+          <!-- SIDEBAR -->
+          <aside class="account-sidebar">
+            <div class="account-avatar">
+              <div class="account-avatar__icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div>
+                <p class="account-avatar__name" id="sidebarName">...</p>
+                <p class="account-avatar__email" id="sidebarEmail">...</p>
+              </div>
+            </div>
+
+            <nav class="account-nav">
+              <button class="account-nav__link account-nav__link--active" data-section="orders">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+                Мои заказы
+              </button>
+              <button class="account-nav__link" data-section="profile">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Профиль
+              </button>
+            </nav>
+
+            <button class="account-logout" id="logoutBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Выйти
+            </button>
+          </aside>
+
+          <!-- MAIN CONTENT -->
+          <div class="account-content">
+
+            <!-- ORDERS SECTION -->
+            <div class="account-section-block" id="sectionOrders">
+              <h2 class="account-section__title">История заказов</h2>
+              <div id="ordersList">
+                <div class="account-loading">
+                  <div class="catalog-loading__spinner"></div>
+                  <p>Загружаем заказы...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- PROFILE SECTION -->
+            <div class="account-section-block" id="sectionProfile" style="display:none">
+              <h2 class="account-section__title">Личные данные</h2>
+
+              <div class="form-group">
+                <label class="form-label" for="profileName">Имя</label>
+                <input type="text" id="profileName" class="form-input" maxlength="60" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="profilePhone">Телефон</label>
+                <input type="tel" id="profilePhone" class="form-input" placeholder="+7 (___) ___-__-__" maxlength="18" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" id="profileEmail" class="form-input" disabled style="opacity:.5;cursor:not-allowed" />
+                <span style="font-size:.75rem;color:var(--white-30);margin-top:4px;display:block">Email нельзя изменить</span>
+              </div>
+
+              <span class="form-error" id="profileError" style="margin-bottom:12px;display:block"></span>
+              <button class="btn btn--gold" id="saveProfileBtn">Сохранить</button>
+              <span class="profile-saved" id="profileSaved" style="display:none">✓ Сохранено</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+    <footer class="footer">
+    <div class="container">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <p class="footer__logo">SCENT ✦ PERFUME BAR</p>
+          <p class="footer__tagline">Нишевая & Люксовая Парфюмерия</p>
+        </div>
+        <nav class="footer__nav">
+          <a href="catalog.html">Каталог</a>
+          <a href="delivery.html">Доставка</a>
+          <a href="oferta.html">Оферта</a>
+          <a href="privacy.html">Конфиденциальность</a>
+          <a href="returns.html">Возврат</a>
+        </nav>
+      </div>
+      <div class="footer__bottom">
+        <p>© 2025 Scent Perfume Bar. Все права защищены.</p>
+        <p>Только оригинальная парфюмерия.</p>
+      </div>
+    </div>
+  </footer>
+  <script src="js/body-lock.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/account.js"></script>
+  <script src="js/insta-float.js"></script>
+  <script src="js/wa-popup.js"></script>
+</body>
+</html>
