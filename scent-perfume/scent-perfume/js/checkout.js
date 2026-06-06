@@ -238,10 +238,11 @@ async function saveOrderToDB(orderData) {
     // 2. Сохраняем позиции
     const items = cart.map(item => ({
       order_id:   order.id,
-      product_id: item.id || null,
+      product_id: item.productId || null,
       brand:      item.brand,
       name:       item.name,
       volume:     item.volume,
+      label:      item.label || null,
       price:      item.price,
       qty:        item.qty
     }));
