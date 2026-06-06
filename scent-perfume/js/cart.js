@@ -31,12 +31,39 @@ function renderCartPage() {
 /* =============================================
    RENDER ITEMS LIST
    ============================================= */
+// Храним состояние чекбоксов
+let checkedItems = new Set();
+
 function renderCartItems(cart) {
   const container = document.getElementById('cartItems');
   if (!container) return;
 
-  container.innerHTML = cart.map(item => `
-    <div class="cart-item" data-id="${item.id}">
+  // При первом рендере — все выбраны
+  if (checkedItems.size === 0) {
+    cart.forEach(item => checkedItems.add(String(item.id)));
+  }
+
+  // "Выбрать все" заголовок
+  const allChecked = cart.every(item => checkedItems.has(String(item.id)));
+  const headerHTML = `
+    <div class="cart-items__header">
+      <label class="cart-checkbox">
+        <input type="checkbox" id="checkAll" ${allChecked ? 'checked' : ''}>
+        <span class="cart-checkbox__box"></span>
+        <span class="cart-checkbox__label">Выбрать все</span>
+      </label>
+      <button class="cart-delete-selected" id="deleteSelected">Удалить выбранные</button>
+    </div>`;
+
+  container.innerHTML = headerHTML + cart.map(item => {
+    const checked = checkedItems.has(String(item.id));
+    return `
+    <div class="cart-item ${checked ? 'cart-item--checked' : ''}" data-id="${item.id}">
+
+      <label class="cart-checkbox">
+        <input type="checkbox" class="item-checkbox" data-id="${item.id}" ${checked ? 'checked' : ''}>
+        <span class="cart-checkbox__box"></span>
+      </label>
 
       <div class="cart-item__img">
         ${item.image
@@ -52,34 +79,61 @@ function renderCartItems(cart) {
       </div>
 
       <div class="cart-item__controls">
-        <p class="cart-item__price">
-          ${(item.price * item.qty).toLocaleString('ru')} ₸
-        </p>
+        <p class="cart-item__price">${(item.price * item.qty).toLocaleString('ru')} ₸</p>
         <div class="cart-item__qty">
           <button class="qty-btn" data-action="minus" data-id="${item.id}" aria-label="Уменьшить">−</button>
           <span class="qty-value">${item.qty}</span>
           <button class="qty-btn" data-action="plus" data-id="${item.id}" aria-label="Увеличить">+</button>
         </div>
-        <button class="cart-item__remove" data-id="${item.id}">Удалить</button>
+        <button class="cart-item__remove" data-id="${item.id}">✕</button>
       </div>
 
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
-  // Bind qty buttons
-  container.querySelectorAll('.qty-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id     = btn.dataset.id;
-      const action = btn.dataset.action;
-      changeQty(id, action);
+  // Чекбокс "выбрать все"
+  const checkAll = container.querySelector('#checkAll');
+  if (checkAll) {
+    checkAll.addEventListener('change', () => {
+      if (checkAll.checked) {
+        cart.forEach(item => checkedItems.add(String(item.id)));
+      } else {
+        checkedItems.clear();
+      }
+      renderCartItems(cart);
+      renderCartSummary(getCart());
+    });
+  }
+
+  // Чекбоксы товаров
+  container.querySelectorAll('.item-checkbox').forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (cb.checked) checkedItems.add(cb.dataset.id);
+      else checkedItems.delete(cb.dataset.id);
+      renderCartItems(getCart());
+      renderCartSummary(getCart());
     });
   });
 
-  // Bind remove buttons
-  container.querySelectorAll('.cart-item__remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      removeFromCart(btn.dataset.id);
+  // Удалить выбранные
+  const delBtn = container.querySelector('#deleteSelected');
+  if (delBtn) {
+    delBtn.addEventListener('click', () => {
+      if (!checkedItems.size) return;
+      let cart = getCart().filter(i => !checkedItems.has(String(i.id)));
+      checkedItems.clear();
+      saveCart(cart);
+      updateCartCount();
+      renderCartPage();
     });
+  }
+
+  // Event delegation для qty и remove
+  container.addEventListener('click', function cartClick(e) {
+    const qtyBtn = e.target.closest('.qty-btn');
+    if (qtyBtn) { changeQty(qtyBtn.dataset.id, qtyBtn.dataset.action); return; }
+    const removeBtn = e.target.closest('.cart-item__remove');
+    if (removeBtn) { removeFromCart(removeBtn.dataset.id); return; }
   });
 }
 
@@ -91,16 +145,26 @@ function renderCartSummary(cart) {
   const totalEl = document.getElementById('summaryTotal');
   if (!linesEl || !totalEl) return;
 
-  const total = calcTotal(cart);
+  // Только выбранные товары
+  const selected = cart.filter(i => checkedItems.has(String(i.id)));
+  const total = selected.reduce((s, i) => s + i.price * i.qty, 0);
 
-  linesEl.innerHTML = cart.map(item => `
-    <div class="summary-line">
-      <span>${escapeHTML(item.brand)} ${escapeHTML(item.name)} × ${item.qty}</span>
-      <span>${(item.price * item.qty).toLocaleString('ru')} ₸</span>
-    </div>
-  `).join('');
+  linesEl.innerHTML = selected.length
+    ? selected.map(item => `
+        <div class="summary-line">
+          <span>${escapeHTML(item.brand)} ${escapeHTML(item.name)} × ${item.qty}</span>
+          <span>${(item.price * item.qty).toLocaleString('ru')} ₸</span>
+        </div>`).join('')
+    : '<p style="color:var(--white-30);font-size:0.875rem">Выберите товары для заказа</p>';
 
   totalEl.textContent = total.toLocaleString('ru') + ' ₸';
+
+  // Кнопка "Оформить" — только если есть выбранные
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  if (checkoutBtn) {
+    checkoutBtn.disabled = selected.length === 0;
+    checkoutBtn.style.opacity = selected.length ? '1' : '0.5';
+  }
 }
 
 /* =============================================
