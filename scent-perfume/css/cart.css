@@ -819,3 +819,94 @@
   .card-preview__number { font-size: 1rem; }
   .pay-tab { padding: 8px 10px; font-size: 11px; }
 }
+
+/* =============================================
+   CART CHECKBOXES
+   ============================================= */
+.cart-items__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 8px;
+}
+
+.cart-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.cart-checkbox input[type="checkbox"] {
+  display: none;
+}
+.cart-checkbox__box {
+  width: 20px; height: 20px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+  background: transparent;
+}
+.cart-checkbox input:checked + .cart-checkbox__box {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.cart-checkbox input:checked + .cart-checkbox__box::after {
+  content: '';
+  width: 5px; height: 9px;
+  border: 2px solid var(--black);
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg) translate(-1px, -1px);
+  display: block;
+}
+.cart-checkbox__label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--white-60);
+  letter-spacing: 0.05em;
+}
+
+.cart-delete-selected {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(229,115,115,0.7);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  transition: color var(--transition-fast);
+  touch-action: manipulation;
+}
+.cart-delete-selected:hover { color: #e57373; }
+
+/* Cart item с чекбоксом */
+.cart-item {
+  display: grid;
+  grid-template-columns: 24px 80px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  transition: opacity var(--transition-fast);
+}
+.cart-item:not(.cart-item--checked) {
+  opacity: 0.45;
+}
+.cart-item--checked { opacity: 1; }
+
+@media (max-width: 480px) {
+  .cart-item {
+    grid-template-columns: 24px 64px 1fr;
+    grid-template-rows: auto auto;
+    gap: 10px;
+  }
+  .cart-item__controls { grid-column: 2 / -1; }
+}

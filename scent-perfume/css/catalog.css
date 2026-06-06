@@ -399,14 +399,38 @@
   background: var(--black-mid);
   border: 1px solid rgba(201,168,76,0.15);
   border-radius: var(--radius-lg);
-  max-width: 700px;
+  max-width: 780px;
   width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
+  /* Без скролла — весь контент виден сразу */
+  max-height: calc(100vh - 40px);
+  overflow: hidden;
   transform: scale(0.95);
   transition: transform 0.3s ease;
-  padding: 40px;
+  padding: 32px 40px;
   position: relative;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 36px;
+  align-items: center;
+}
+/* Кнопка закрыть — поверх грида */
+.product-modal > .modal__close {
+  grid-column: 1 / -1;
+  justify-self: end;
+  margin-bottom: -16px;
+}
+/* Картинка занимает левую колонку */
+.product-modal > .modal__img-wrap {
+  grid-column: 1;
+  grid-row: 2 / 6;
+}
+/* Весь текст — правая колонка */
+.product-modal > .modal__brand,
+.product-modal > .modal__name,
+.product-modal > .modal__notes,
+.product-modal > .modal__desc,
+.product-modal > .modal__footer {
+  grid-column: 2;
 }
 .product-modal-overlay.open .product-modal { transform: scale(1); }
 
@@ -505,7 +529,37 @@
 .modal__img-wrap img {
   width: 100%;
   height: auto;
-  max-height: 360px;
   object-fit: contain;
   display: block;
+  border-radius: 8px;
+}
+
+/* Modal mobile — одна колонка, всё видно без скролла */
+@media (max-width: 640px) {
+  .product-modal {
+    grid-template-columns: 1fr;
+    padding: 24px 20px 32px;
+    max-height: 95vh;
+  }
+  .product-modal > .modal__img-wrap {
+    grid-column: 1;
+    grid-row: auto;
+    max-height: 220px;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+  .product-modal > .modal__img-wrap img {
+    max-height: 220px;
+    object-fit: contain;
+  }
+  .product-modal > .modal__brand,
+  .product-modal > .modal__name,
+  .product-modal > .modal__notes,
+  .product-modal > .modal__desc,
+  .product-modal > .modal__footer {
+    grid-column: 1;
+  }
+  .modal__footer { flex-direction: column; gap: 12px; }
+  .modal__actions { flex-direction: column; }
+  .modal__actions .btn { width: 100%; justify-content: center; }
 }
