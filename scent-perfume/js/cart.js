@@ -1,15 +1,22 @@
 /**
  * Scent Perfume Bar — Cart JS
- * Handles: render cart, qty change, remove, clear, WhatsApp order
+ * Fixed: checkbox "select all" bug + improved logic
  */
 
 'use strict';
 
 /* =============================================
+   CHECKBOX STATE
+   null  = not yet initialized (first load → select all)
+   Set() = user has interacted (respect their choices)
+   ============================================= */
+let checkedItems = null;
+
+/* =============================================
    RENDER CART PAGE
    ============================================= */
 function renderCartPage() {
-  const cart = getCart();
+  const cart        = getCart();
   const cartEmpty   = document.getElementById('cartEmpty');
   const cartContent = document.getElementById('cartContent');
   if (!cartEmpty || !cartContent) return;
@@ -17,6 +24,7 @@ function renderCartPage() {
   if (cart.length === 0) {
     cartEmpty.style.display   = 'block';
     cartContent.style.display = 'none';
+    checkedItems = null; // reset so next time all are pre-selected
     return;
   }
 
@@ -31,20 +39,22 @@ function renderCartPage() {
 /* =============================================
    RENDER ITEMS LIST
    ============================================= */
-// Храним состояние чекбоксов
-let checkedItems = new Set();
-
 function renderCartItems(cart) {
   const container = document.getElementById('cartItems');
   if (!container) return;
 
-  // При первом рендере — все выбраны
-  if (checkedItems.size === 0) {
-    cart.forEach(item => checkedItems.add(String(item.id)));
+  // First load → select all
+  if (checkedItems === null) {
+    checkedItems = new Set(cart.map(item => String(item.id)));
   }
 
-  // "Выбрать все" заголовок
-  const allChecked = cart.every(item => checkedItems.has(String(item.id)));
+  // Remove stale ids (items that were deleted)
+  const validIds = new Set(cart.map(item => String(item.id)));
+  checkedItems.forEach(id => { if (!validIds.has(id)) checkedItems.delete(id); });
+
+  const allChecked  = cart.length > 0 && cart.every(item => checkedItems.has(String(item.id)));
+  const someChecked = cart.some(item => checkedItems.has(String(item.id)));
+
   const headerHTML = `
     <div class="cart-items__header">
       <label class="cart-checkbox">
@@ -85,27 +95,32 @@ function renderCartItems(cart) {
           <span class="qty-value">${item.qty}</span>
           <button class="qty-btn" data-action="plus" data-id="${item.id}" aria-label="Увеличить">+</button>
         </div>
-        <button class="cart-item__remove" data-id="${item.id}">✕</button>
+        <button class="cart-item__remove" data-id="${item.id}">Удалить</button>
       </div>
 
     </div>`;
   }).join('');
 
-  // Чекбокс "выбрать все"
+  // "Select all" checkbox
   const checkAll = container.querySelector('#checkAll');
   if (checkAll) {
+    // Visual indeterminate state
+    checkAll.indeterminate = someChecked && !allChecked;
+
     checkAll.addEventListener('change', () => {
       if (checkAll.checked) {
+        // Select all
         cart.forEach(item => checkedItems.add(String(item.id)));
       } else {
+        // Deselect all — clear but keep Set instance (not null!)
         checkedItems.clear();
       }
-      renderCartItems(cart);
+      renderCartItems(getCart());
       renderCartSummary(getCart());
     });
   }
 
-  // Чекбоксы товаров
+  // Individual item checkboxes
   container.querySelectorAll('.item-checkbox').forEach(cb => {
     cb.addEventListener('change', () => {
       if (cb.checked) checkedItems.add(cb.dataset.id);
@@ -115,21 +130,21 @@ function renderCartItems(cart) {
     });
   });
 
-  // Удалить выбранные
+  // Delete selected button
   const delBtn = container.querySelector('#deleteSelected');
   if (delBtn) {
     delBtn.addEventListener('click', () => {
       if (!checkedItems.size) return;
-      let cart = getCart().filter(i => !checkedItems.has(String(i.id)));
+      const remaining = getCart().filter(i => !checkedItems.has(String(i.id)));
       checkedItems.clear();
-      saveCart(cart);
+      saveCart(remaining);
       updateCartCount();
       renderCartPage();
     });
   }
 
-  // Event delegation для qty и remove
-  container.addEventListener('click', function cartClick(e) {
+  // Event delegation for qty and remove buttons
+  container.addEventListener('click', function(e) {
     const qtyBtn = e.target.closest('.qty-btn');
     if (qtyBtn) { changeQty(qtyBtn.dataset.id, qtyBtn.dataset.action); return; }
     const removeBtn = e.target.closest('.cart-item__remove');
@@ -145,8 +160,9 @@ function renderCartSummary(cart) {
   const totalEl = document.getElementById('summaryTotal');
   if (!linesEl || !totalEl) return;
 
-  // Только выбранные товары
-  const selected = cart.filter(i => checkedItems.has(String(i.id)));
+  const selected = checkedItems
+    ? cart.filter(i => checkedItems.has(String(i.id)))
+    : [];
   const total = selected.reduce((s, i) => s + i.price * i.qty, 0);
 
   linesEl.innerHTML = selected.length
@@ -155,15 +171,15 @@ function renderCartSummary(cart) {
           <span>${escapeHTML(item.brand)} ${escapeHTML(item.name)} × ${item.qty}</span>
           <span>${(item.price * item.qty).toLocaleString('ru')} ₸</span>
         </div>`).join('')
-    : '<p style="color:var(--white-30);font-size:0.875rem">Выберите товары для заказа</p>';
+    : '<p style="color:var(--white-30);font-size:0.83rem;line-height:1.5">Выберите товары для заказа</p>';
 
   totalEl.textContent = total.toLocaleString('ru') + ' ₸';
 
-  // Кнопка "Оформить" — только если есть выбранные
   const checkoutBtn = document.getElementById('checkoutBtn');
   if (checkoutBtn) {
     checkoutBtn.disabled = selected.length === 0;
     checkoutBtn.style.opacity = selected.length ? '1' : '0.5';
+    checkoutBtn.style.pointerEvents = selected.length ? 'auto' : 'none';
   }
 }
 
@@ -171,20 +187,19 @@ function renderCartSummary(cart) {
    BIND SUMMARY ACTION BUTTONS
    ============================================= */
 function bindCartSummaryButtons(cart) {
-  // WhatsApp order button
   const waBtn = document.getElementById('whatsappOrderBtn');
   if (waBtn) {
-    waBtn.href = buildWhatsAppCartLink(cart);
+    waBtn.href   = buildWhatsAppCartLink(cart);
     waBtn.target = '_blank';
-    waBtn.rel = 'noopener noreferrer';
+    waBtn.rel    = 'noopener noreferrer';
   }
 
-  // Clear cart
   const clearBtn = document.getElementById('clearCartBtn');
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
       if (confirm('Очистить всю корзину?')) {
         localStorage.removeItem('scent_cart');
+        checkedItems = null;
         updateCartCount();
         renderCartPage();
       }
@@ -204,10 +219,7 @@ function changeQty(id, action) {
     item.qty = Math.min(item.qty + 1, 99);
   } else {
     item.qty -= 1;
-    if (item.qty <= 0) {
-      removeFromCart(id);
-      return;
-    }
+    if (item.qty <= 0) { removeFromCart(id); return; }
   }
 
   saveCart(cart);
@@ -216,16 +228,13 @@ function changeQty(id, action) {
 }
 
 function removeFromCart(id) {
-  let cart = getCart();
-  cart = cart.filter(i => String(i.id) !== String(id));
+  let cart = getCart().filter(i => String(i.id) !== String(id));
+  if (checkedItems) checkedItems.delete(String(id));
   saveCart(cart);
   updateCartCount();
   renderCartPage();
 }
 
-/* =============================================
-   TOTAL CALCULATION
-   ============================================= */
 function calcTotal(cart) {
   return cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 }
@@ -234,11 +243,15 @@ function calcTotal(cart) {
    WHATSAPP MESSAGE BUILDER
    ============================================= */
 function buildWhatsAppCartLink(cart) {
-  const lines = cart.map(item =>
+  const selected = checkedItems
+    ? cart.filter(i => checkedItems.has(String(i.id)))
+    : cart;
+
+  const lines = selected.map(item =>
     `• ${item.brand} — ${item.name} (${item.volume}) × ${item.qty} = ${(item.price * item.qty).toLocaleString('ru')} ₸`
   ).join('\n');
 
-  const total = calcTotal(cart);
+  const total = selected.reduce((s, i) => s + i.price * i.qty, 0);
   const msg =
     `Здравствуйте! Хочу оформить заказ:\n\n${lines}\n\n` +
     `Итого: ${total.toLocaleString('ru')} ₸\n\n` +
@@ -248,7 +261,7 @@ function buildWhatsAppCartLink(cart) {
 }
 
 /* =============================================
-   INIT CART PAGE
+   INIT
    ============================================= */
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('cartItems')) {
