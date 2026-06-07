@@ -398,28 +398,18 @@ function initCardForm() {
     numInput.addEventListener('input', () => {
       let v = numInput.value.replace(/\D/g, '').slice(0, 16);
       numInput.value = v.replace(/(\d{4})/g, '$1 ').trim();
-      if (numDisplay) numDisplay.textContent = numInput.value.padEnd(19, '•').replace(/[0-9]/g, (c, i) => i < numInput.value.length ? c : '•') || '•••• •••• •••• ••••';
+      if (numDisplay) {
+        const raw = numInput.value.replace(/\s/g, '');
+        const padded = raw.padEnd(16, '•');
+        numDisplay.textContent = padded.match(/.{1,4}/g).join(' ');
+      }
       // Определяем систему
       if (brandDisplay) {
         const first = v[0];
-        const pre4  = v.slice(0, 4);
-        if (first === '4') {
-          brandDisplay.innerHTML = `
-            <svg class="card-brand--visa" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="height:22px;width:auto">
-              <text x="0" y="16" font-family="Arial,sans-serif" font-size="18" font-weight="700" letter-spacing="1" fill="white">VISA</text>
-            </svg>`;
-        } else if (first === '5') {
-          brandDisplay.innerHTML = `
-            <svg class="card-brand--mc" viewBox="0 0 50 32" xmlns="http://www.w3.org/2000/svg" style="height:28px;width:auto">
-              <circle class="mc-circle-left"  cx="18" cy="16" r="14"/>
-              <circle class="mc-circle-right" cx="32" cy="16" r="14"/>
-              <path   class="mc-overlap" d="M25 5.2A14 14 0 0 1 32 16a14 14 0 0 1-7 10.8A14 14 0 0 1 18 16 14 14 0 0 1 25 5.2z"/>
-            </svg>`;
-        } else if (pre4 === '9870' || pre4 === '4400') {
-          brandDisplay.innerHTML = `<span class="card-preview__brand-text" style="color:#F6C600;font-weight:800;font-size:14px;letter-spacing:0.02em">KASPI</span>`;
-        } else {
-          brandDisplay.innerHTML = `<span class="card-preview__brand-text" style="color:rgba(255,255,255,0.3);font-size:12px">••••</span>`;
-        }
+        if (first === '4') brandDisplay.textContent = 'VISA';
+        else if (first === '5') brandDisplay.textContent = 'MASTERCARD';
+        else if (v.startsWith('9870')) brandDisplay.textContent = 'KASPI';
+        else brandDisplay.textContent = '';
       }
     });
   }
