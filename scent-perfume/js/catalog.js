@@ -213,14 +213,17 @@ function openGallery(id) {
   requestAnimationFrame(() => overlay.classList.add('open'));
   bodyLock('gallery');
 
+  // Предзагрузка всех фото сразу — чтобы листание было мгновенным
+  photos.forEach(src => {
+    const preload = new Image();
+    preload.src = src;
+  });
+
   function goTo(idx) {
     current = (idx + photos.length) % photos.length;
     const img = overlay.querySelector('#galleryImg');
-    img.style.opacity = '0';
-    setTimeout(() => {
-      img.src = photos[current];
-      img.style.opacity = '1';
-    }, 150);
+    // Мгновенная смена — фото уже загружено в кеш
+    img.src = photos[current];
     overlay.querySelectorAll('.gallery-dot').forEach((d, i) => {
       d.classList.toggle('gallery-dot--active', i === current);
     });
