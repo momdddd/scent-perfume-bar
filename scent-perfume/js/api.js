@@ -59,6 +59,7 @@ async function fetchProducts() {
     badge:       row.badge || null,
     description: row.description,
     image:       row.image_url || null,
+    images:      row.images || [],
     inStock:     row.in_stock
   }));
 }

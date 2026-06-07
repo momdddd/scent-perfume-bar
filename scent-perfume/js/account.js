@@ -248,7 +248,9 @@ function renderOrder(order) {
               <span class="order-item__name">
                 ${escapeHTML(item.brand)} — ${escapeHTML(item.name)}
               </span>
-              <span class="order-item__vol">${escapeHTML(item.volume)} × ${item.qty}</span>
+              <span class="order-item__vol">
+                ${escapeHTML(item.volume)}${item.label ? ' · ' + escapeHTML(item.label) : ''} × ${item.qty}
+              </span>
               <span class="order-item__price">
                 ${Number(item.price * item.qty).toLocaleString('ru')} ₸
               </span>
