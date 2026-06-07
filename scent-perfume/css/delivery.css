@@ -1,0 +1,601 @@
+/* =============================================
+   DELIVERY PAGE — Scent Perfume Bar
+   Люкс · Минимализм · Тёмная тема
+   ============================================= */
+
+/* ── Общие блоки ────────────────────────────── */
+.dlv-section {
+  padding: 80px 0;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.dlv-section__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.dlv-section__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 300;
+  line-height: 1.2;
+  color: var(--white);
+  margin-top: 8px;
+}
+.dlv-section__title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+/* ── 1. HERO ────────────────────────────────── */
+.dlv-hero {
+  padding: 130px 0 80px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.dlv-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.dlv-hero .section__eyebrow {
+  margin-bottom: 16px;
+}
+.dlv-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 8vw, 5.5rem);
+  font-weight: 300;
+  line-height: 1.05;
+  color: var(--white);
+  margin-bottom: 20px;
+}
+.dlv-hero__title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.dlv-hero__sub {
+  font-size: 1rem;
+  color: var(--white-60);
+  max-width: 480px;
+  margin: 0 auto 48px;
+  line-height: 1.7;
+}
+.dlv-hero__badges {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.dlv-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 28px;
+  background: var(--black-soft);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: 16px;
+  min-width: 120px;
+  transition: border-color var(--transition-fast);
+}
+.dlv-badge:hover {
+  border-color: rgba(201,168,76,0.35);
+}
+.dlv-badge__icon {
+  font-size: 1.5rem;
+  color: var(--gold);
+}
+.dlv-badge__text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  color: var(--white-60);
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ── 2. СПОСОБЫ ДОСТАВКИ ──────────────────── */
+.dlv-methods {
+  background: var(--black-soft);
+}
+.dlv-methods__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.dlv-method-card {
+  background: var(--black-mid);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 20px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+.dlv-method-card:hover {
+  border-color: rgba(201,168,76,0.2);
+  transform: translateY(-3px);
+}
+.dlv-method-card--featured {
+  border-color: rgba(201,168,76,0.25);
+  background: linear-gradient(135deg, var(--black-mid) 0%, rgba(201,168,76,0.04) 100%);
+}
+.dlv-method-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dlv-method-card__logo {
+  font-family: var(--font-body);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--white);
+  letter-spacing: 0.05em;
+}
+.dlv-method-card__logo--post {
+  font-size: 15px;
+}
+.dlv-method-card__badge {
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--gold);
+  color: var(--black);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.dlv-method-card__badge--outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--white-60);
+}
+.dlv-method-card__name {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--white);
+}
+.dlv-method-card__desc {
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.7;
+}
+.dlv-method-card__specs {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+.dlv-method-card__specs li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--white-60);
+  line-height: 1.5;
+}
+.dlv-method-card__specs li svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--gold);
+}
+.dlv-method-card__specs strong {
+  color: var(--white);
+  font-weight: 500;
+}
+.dlv-method-card__footer {
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dlv-method-card__price-label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--white-30);
+}
+.dlv-method-card__price {
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: var(--white-60);
+}
+.dlv-methods__note {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--white-30);
+  max-width: 520px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ── 3. ГОРОДА ───────────────────────────── */
+.dlv-cities__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-bottom: 20px;
+}
+.dlv-city {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.dlv-city:nth-child(3n+1) { padding-right: 24px; }
+.dlv-city:nth-child(3n+2) { padding: 16px 24px; border-left: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); }
+.dlv-city:nth-child(3n) { padding-left: 24px; }
+.dlv-city__name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 300;
+  color: var(--white);
+  white-space: nowrap;
+}
+.dlv-city__line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.dlv-city__time {
+  font-size: 12px;
+  color: var(--gold);
+  font-family: var(--font-body);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+}
+.dlv-cities__disclaimer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--white-30);
+  margin-top: 20px;
+}
+
+/* ── 4. ЭТАПЫ ────────────────────────────── */
+.dlv-steps__track {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.dlv-step {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+}
+.dlv-step__num {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--gold);
+  opacity: 0.6;
+  padding-top: 4px;
+  text-align: right;
+}
+.dlv-step__body {
+  padding-bottom: 0;
+}
+.dlv-step__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 8px;
+}
+.dlv-step__desc {
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+.dlv-step__micro {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  opacity: 0.7;
+}
+.dlv-step__connector {
+  display: block;
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(201,168,76,0.3), rgba(201,168,76,0.05));
+  margin: 8px 0 8px 27px;
+}
+
+/* ── 5. УПАКОВКА ─────────────────────────── */
+.dlv-packaging {
+  background: var(--black-soft);
+}
+.dlv-packaging__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+.dlv-packaging__desc {
+  font-size: 0.9rem;
+  color: var(--white-60);
+  line-height: 1.7;
+  margin: 16px 0 24px;
+}
+.dlv-packaging__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dlv-packaging__list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.5;
+}
+.dlv-packaging__dot {
+  color: var(--gold);
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  margin-top: 2px;
+}
+.dlv-packaging__visual {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.dlv-pkg-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--black-mid);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  transition: border-color var(--transition-fast);
+}
+.dlv-pkg-card:hover {
+  border-color: rgba(201,168,76,0.2);
+}
+.dlv-pkg-icon {
+  font-size: 1.3rem;
+  color: var(--gold);
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.dlv-pkg-label {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 3px;
+}
+.dlv-pkg-sub {
+  font-size: 12px;
+  color: var(--white-30);
+  letter-spacing: 0.03em;
+}
+
+/* ── 6. ОТСЛЕЖИВАНИЕ ─────────────────────── */
+.dlv-tracking__inner {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 48px;
+  align-items: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.dlv-tracking__icon {
+  font-size: 4rem;
+  color: var(--gold);
+  opacity: 0.25;
+  text-align: center;
+  font-family: var(--font-display);
+}
+.dlv-tracking__text p {
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.7;
+  margin: 12px 0 24px;
+}
+.dlv-tracking__links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.dlv-tracking__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid rgba(201,168,76,0.3);
+  padding-bottom: 2px;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.dlv-tracking__link:hover {
+  color: var(--gold-light);
+  border-color: var(--gold-light);
+}
+
+/* ── 7. ДОВЕРИЕ ──────────────────────────── */
+.dlv-trust {
+  background: var(--black-soft);
+}
+.dlv-trust__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 52px;
+}
+.dlv-trust-card {
+  padding: 32px 28px;
+  background: var(--black-mid);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  transition: border-color var(--transition-fast);
+}
+.dlv-trust-card:hover {
+  border-color: rgba(201,168,76,0.2);
+}
+.dlv-trust-card__icon {
+  font-size: 1.4rem;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+.dlv-trust-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+.dlv-trust-card p {
+  font-size: 0.85rem;
+  color: var(--white-60);
+  line-height: 1.7;
+}
+.dlv-trust__cta {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.dlv-trust__cta > p {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: var(--white-60);
+}
+.dlv-trust__cta .btn svg {
+  flex-shrink: 0;
+}
+.dlv-trust__cta .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── 8. FAQ ──────────────────────────────── */
+.dlv-faq__list {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.dlv-faq__item {
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.dlv-faq__item:first-child {
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.dlv-faq__q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  cursor: pointer;
+  list-style: none;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: var(--white);
+  transition: color var(--transition-fast);
+  -webkit-tap-highlight-color: transparent;
+}
+.dlv-faq__q::-webkit-details-marker { display: none; }
+.dlv-faq__q:hover { color: var(--gold); }
+.dlv-faq__arrow {
+  flex-shrink: 0;
+  color: var(--gold);
+  opacity: 0.5;
+  transition: transform 0.3s ease;
+}
+.dlv-faq__item[open] .dlv-faq__arrow {
+  transform: rotate(180deg);
+}
+.dlv-faq__a {
+  padding: 0 0 20px;
+  animation: faqOpen 0.25s ease;
+}
+.dlv-faq__a p {
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.8;
+  max-width: 580px;
+}
+@keyframes faqOpen {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .dlv-section { padding: 60px 0; }
+  .dlv-hero { padding: 110px 0 60px; }
+
+  .dlv-methods__grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dlv-cities__grid {
+    grid-template-columns: 1fr;
+  }
+  .dlv-city { padding: 14px 0 !important; border-left: none !important; border-right: none !important; }
+
+  .dlv-packaging__inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .dlv-trust__grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dlv-tracking__inner {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .dlv-tracking__icon { display: none; }
+
+  .dlv-step {
+    grid-template-columns: 44px 1fr;
+    gap: 16px;
+  }
+
+  .dlv-hero__badges {
+    gap: 12px;
+  }
+  .dlv-badge {
+    padding: 18px 20px;
+    min-width: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dlv-method-card { padding: 24px 20px; }
+  .dlv-trust-card  { padding: 24px 20px; }
+  .dlv-tracking__links { flex-direction: column; gap: 12px; }
+}

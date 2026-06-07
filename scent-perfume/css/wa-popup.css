@@ -1,0 +1,194 @@
+/* =============================================
+   WhatsApp Popup — два магазина
+   ============================================= */
+
+/* Оверлей */
+.wa-popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.wa-popup-overlay.open {
+  display: flex;
+  animation: waFadeIn 0.2s ease;
+}
+@keyframes waFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Карточка */
+.wa-popup {
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 420px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+  animation: waSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes waSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Шапка попапа */
+.wa-popup__header {
+  padding: 28px 28px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.wa-popup__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.wa-popup__icon {
+  width: 44px;
+  height: 44px;
+  background: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+}
+.wa-popup__title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1.2;
+}
+.wa-popup__subtitle {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+.wa-popup__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+.wa-popup__close:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}
+
+/* Магазины */
+.wa-popup__stores {
+  padding: 8px 0 16px;
+}
+
+.wa-store {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 28px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+.wa-store:hover {
+  background: rgba(255,255,255,0.04);
+}
+.wa-store:hover .wa-store__btn {
+  background: #1da851;
+  transform: scale(1.05);
+}
+
+.wa-store__avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(37,211,102,0.3);
+}
+.wa-store__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wa-store__info {
+  flex: 1;
+  min-width: 0;
+}
+.wa-store__name {
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 3px;
+}
+.wa-store__city {
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+.wa-store__address {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wa-store__btn {
+  width: 44px;
+  height: 44px;
+  background: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37,211,102,0.25);
+}
+
+.wa-popup__divider {
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+  margin: 0 28px;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .wa-popup { border-radius: 20px 20px 0 0; }
+  .wa-popup-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .wa-popup { max-width: 100%; }
+  .wa-store { padding: 16px 20px; }
+  .wa-popup__header { padding: 22px 20px 16px; }
+}
