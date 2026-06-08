@@ -284,6 +284,9 @@ body.auth-page {
   .auth-card {
     max-width: 100%;
   }
+  .account-sidebar {
+    position: static !important;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 1024px) {
