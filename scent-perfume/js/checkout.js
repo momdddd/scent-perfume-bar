@@ -199,41 +199,71 @@ function mapDeliveryType(val) {
 async function saveOrderToDB(orderData) {
   try {
     const loggedIn = isLoggedIn();
-    const token    = loggedIn ? getAccessToken() : SUPABASE_KEY;
-    const user     = loggedIn ? getCurrentUser() : null;
-    const cart   = getCart();
+    // ✅ ИСПРАВЛЕНО: всегда используем anon key для INSERT,
+    // иначе истёкший/невалидный токен блокирует создание заказа
+    const token = SUPABASE_KEY;
+    const user  = loggedIn ? getCurrentUser() : null;
+    const cart  = getCart();
+
+    console.log('[checkout] saveOrderToDB start', {
+      loggedIn,
+      userId: user?.id || null,
+      cartItems: cart.length,
+      total: cart.reduce((s, i) => s + i.price * i.qty, 0)
+    });
+
     const storeNames = {
       karaganda: 'Scent Perfume Bar (Караганда)',
       atbasar:   'Scent Perfume Bar (Атбасар)'
     };
     const store = document.querySelector('input[name="pickupStore"]:checked')?.value;
 
+    const orderPayload = {
+      user_id:          user?.id || null,
+      customer_name:    sanitize(getVal('inputName')),
+      customer_phone:   sanitize(getVal('inputPhone')),
+      delivery_type:    mapDeliveryType(orderData.delivery),
+      city:             sanitize(getVal('inputCity')) || null,
+      address:          sanitize(getVal('inputAddress')) || null,
+      pickup_store:     storeNames[store] || null,
+      comment:          sanitize(getVal('inputComment')) || null,
+      total_price:      cart.reduce((s, i) => s + i.price * i.qty, 0),
+      status:           'new',
+      payment_status:   'pending'
+    };
+
+    console.log('[checkout] POST /orders payload:', orderPayload);
+
     // 1. Создаём заказ
     const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_KEY,
+        'apikey':        SUPABASE_KEY,
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=representation'
+        'Content-Type':  'application/json',
+        'Prefer':        'return=representation'
       },
-      body: JSON.stringify({
-        user_id:         user?.id || null,
-        customer_name:  sanitize(getVal('inputName')),
-        customer_phone: sanitize(getVal('inputPhone')),
-        delivery_type:   mapDeliveryType(orderData.delivery),
-        city:           sanitize(getVal('inputCity')) || null,
-        address:        sanitize(getVal('inputAddress')) || null,
-        pickup_store:   storeNames[store] || null,
-        comment:        sanitize(getVal('inputComment')) || null,
-        total_price:    cart.reduce((s, i) => s + i.price * i.qty, 0),
-        status:         'new',
-        payment_status:  'pending'
-      })
+      body: JSON.stringify(orderPayload)
     });
 
-    const [order] = await orderRes.json();
-    if (!order?.id) return null;
+    const orderResText = await orderRes.text();
+    console.log('[checkout] /orders response status:', orderRes.status);
+    console.log('[checkout] /orders response body:', orderResText);
+
+    if (!orderRes.ok) {
+      console.error('[checkout] Ошибка создания заказа:', orderRes.status, orderResText);
+      return null;
+    }
+
+    const orderJson = JSON.parse(orderResText);
+    const order = Array.isArray(orderJson) ? orderJson[0] : orderJson;
+
+    if (!order?.id) {
+      console.error('[checkout] order.id отсутствует в ответе:', orderJson);
+      return null;
+    }
+
+    console.log('[checkout] Заказ создан, id:', order.id);
 
     // 2. Сохраняем позиции
     const items = cart.map(item => ({
@@ -247,20 +277,31 @@ async function saveOrderToDB(orderData) {
       qty:        item.qty
     }));
 
-    await fetch(`${SUPABASE_URL}/rest/v1/order_items`, {
+    console.log('[checkout] POST /order_items:', items);
+
+    const itemsRes = await fetch(`${SUPABASE_URL}/rest/v1/order_items`, {
       method: 'POST',
       headers: {
-        'apikey': SUPABASE_KEY,
+        'apikey':        SUPABASE_KEY,
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal'
       },
       body: JSON.stringify(items)
     });
 
+    const itemsResText = await itemsRes.text();
+    console.log('[checkout] /order_items response status:', itemsRes.status);
+    if (!itemsRes.ok) {
+      console.error('[checkout] Ошибка сохранения позиций:', itemsResText);
+    } else {
+      console.log('[checkout] Позиции заказа сохранены ✓');
+    }
+
     return order.id;
 
   } catch (err) {
-    console.error('[checkout] Не удалось сохранить заказ:', err);
+    console.error('[checkout] Исключение в saveOrderToDB:', err);
     return null;
   }
 }
