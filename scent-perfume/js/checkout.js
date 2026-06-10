@@ -232,8 +232,17 @@ async function saveOrderToDB(orderData) {
       })
     });
 
-    const [order] = await orderRes.json();
-    if (!order?.id) return null;
+    const orderJson = await orderRes.json();
+    if (!orderRes.ok) {
+      console.error('[checkout] Supabase orders error:', orderRes.status, JSON.stringify(orderJson));
+      return null;
+    }
+    // Supabase с Prefer:return=representation возвращает массив
+    const order = Array.isArray(orderJson) ? orderJson[0] : orderJson;
+    if (!order?.id) {
+      console.error('[checkout] Нет id в ответе orders:', JSON.stringify(orderJson));
+      return null;
+    }
 
     // 2. Сохраняем позиции
     const items = cart.map(item => ({
