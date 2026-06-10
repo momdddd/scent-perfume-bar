@@ -261,6 +261,32 @@ function buildWhatsAppCartLink(cart) {
 }
 
 /* =============================================
+   CHECKED CART HELPERS (used by checkout.js)
+   ============================================= */
+
+/**
+ * Возвращает только выбранные (отмеченные) товары из корзины.
+ * Если checkedItems не инициализирован — возвращает всю корзину.
+ */
+function getCheckedCart() {
+  const cart = getCart();
+  if (!checkedItems) return cart;
+  return cart.filter(i => checkedItems.has(String(i.id)));
+}
+
+/**
+ * Удаляет из корзины только те товары, которые были выбраны (отмечены).
+ * Остальные товары остаются в корзине.
+ */
+function removeCheckedFromCart() {
+  if (!checkedItems || checkedItems.size === 0) return;
+  const remaining = getCart().filter(i => !checkedItems.has(String(i.id)));
+  checkedItems.clear();
+  checkedItems = null; // сбросим, чтобы при следующем открытии корзины всё выбралось
+  saveCart(remaining);
+}
+
+/* =============================================
    INIT
    ============================================= */
 document.addEventListener('DOMContentLoaded', () => {

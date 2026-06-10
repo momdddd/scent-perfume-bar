@@ -138,7 +138,9 @@ function initDeliveryToggle() {
 
 /* ─── CHECKOUT SUMMARY ───────────────────────────────────────── */
 function renderCheckoutSummary() {
-  const cart    = getCart();
+  const cart = (typeof getCheckedCart === 'function' && getCheckedCart().length > 0)
+    ? getCheckedCart()
+    : getCart();
   const itemsEl = document.getElementById('checkoutItems');
   const totalEl = document.getElementById('checkoutTotal');
   if (!itemsEl || !totalEl) return;
@@ -270,7 +272,9 @@ async function saveOrderToDB(orderData) {
 
 /* ─── BUILD WHATSAPP MESSAGE ─────────────────────────────────── */
 function buildOrderMessage() {
-  const cart = getCart();
+  const cart = (typeof getCheckedCart === 'function' && getCheckedCart().length > 0)
+    ? getCheckedCart()
+    : getCart();
   const name     = sanitize(getVal('inputName'));
   const phone    = sanitize(getVal('inputPhone'));
   const delivery = document.querySelector('input[name="delivery"]:checked')?.value;
