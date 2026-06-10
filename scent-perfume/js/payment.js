@@ -159,8 +159,12 @@ async function handlePaymentSuccess(orderId, amount, transactionId) {
 
   await updatePaymentStatus(orderId, 'paid', transactionId);
 
-  // Очищаем корзину
-  localStorage.removeItem('scent_cart');
+  // Удаляем только купленные товары, остальные остаются в корзине
+  if (typeof removeCheckedFromCart === 'function') {
+    removeCheckedFromCart();
+  } else {
+    localStorage.removeItem('scent_cart');
+  }
   if (typeof updateCartCount === 'function') updateCartCount();
 
   // Редирект на страницу успеха

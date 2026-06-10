@@ -201,7 +201,10 @@ async function saveOrderToDB(orderData) {
     const loggedIn = isLoggedIn();
     const token    = loggedIn ? getAccessToken() : SUPABASE_KEY;
     const user     = loggedIn ? getCurrentUser() : null;
-    const cart   = getCart();
+    // Только выбранные товары
+    const cart = (typeof getCheckedCart === 'function' && getCheckedCart().length > 0)
+      ? getCheckedCart()
+      : getCart();
     const storeNames = {
       karaganda: 'Scent Perfume Bar (Караганда)',
       atbasar:   'Scent Perfume Bar (Атбасар)'
@@ -232,17 +235,8 @@ async function saveOrderToDB(orderData) {
       })
     });
 
-    const orderJson = await orderRes.json();
-    if (!orderRes.ok) {
-      console.error('[checkout] Supabase orders error:', orderRes.status, JSON.stringify(orderJson));
-      return null;
-    }
-    // Supabase с Prefer:return=representation возвращает массив
-    const order = Array.isArray(orderJson) ? orderJson[0] : orderJson;
-    if (!order?.id) {
-      console.error('[checkout] Нет id в ответе orders:', JSON.stringify(orderJson));
-      return null;
-    }
+    const [order] = await orderRes.json();
+    if (!order?.id) return null;
 
     // 2. Сохраняем позиции
     const items = cart.map(item => ({
@@ -374,7 +368,12 @@ function showSuccess(orderData, dbOrderId) {
     if (waBtn) waBtn.href = `https://wa.me/77071210281?text=${encodeURIComponent(orderData.msg)}`;
   }
 
-  localStorage.removeItem('scent_cart');
+  // Удаляем только купленные товары, остальные остаются в корзине
+  if (typeof removeCheckedFromCart === 'function') {
+    removeCheckedFromCart();
+  } else {
+    localStorage.removeItem('scent_cart');
+  }
   updateCartCount();
 }
 
