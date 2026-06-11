@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=0.9" />
-  <title>Оплата прошла — Scent Perfume Bar</title>
+  <title>Оплата не прошла — Scent Perfume Bar</title>
   <meta name="robots" content="noindex, nofollow" />
   <link rel="icon" type="image/png" href="assets/logo-icon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -49,23 +49,55 @@
     </ul>
   </div>
 
+  <main class="payment-status-main">
+    <div class="payment-status-card payment-status-card--fail">
+
+      <div class="payment-status__icon payment-status__icon--fail">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </div>
+
+      <h1 class="payment-status__title">Оплата не прошла</h1>
+
+      <p class="payment-status__sub">
+        К сожалению, платёж не был завершён. Средства с вашей карты не списаны,
+        а товары остались в корзине.
+      </p>
+
       <!-- Информация о заказе (заполняется из URL-параметров) -->
       <div id="orderInfo" style="display:none" class="payment-status__order">
-        <p class="payment-status__order-id">Заказ <span id="orderIdDisplay"></span></p>
-        <p class="payment-status__order-amount">Сумма: <span id="orderAmountDisplay"></span></p>
+        <div class="payment-status__order-row">
+          <span>Заказ</span>
+          <span id="orderIdDisplay"></span>
+        </div>
+        <div class="payment-status__order-row">
+          <span>Статус оплаты</span>
+          <span class="payment-status__badge payment-status__badge--fail">Не оплачен</span>
+        </div>
+      </div>
+
+      <div class="payment-status__reasons">
+        <p class="payment-status__reasons-title">Возможные причины</p>
+        <ul>
+          <li>Недостаточно средств на карте</li>
+          <li>Банк отклонил операцию</li>
+          <li>Истекло время ожидания оплаты</li>
+        </ul>
       </div>
 
       <p class="payment-status__note">
-        Менеджер свяжется с вами в течение 30 минут для подтверждения деталей доставки.
+        Попробуйте оплатить ещё раз — все товары сохранены в корзине.
+        Если ошибка повторяется, напишите нам в WhatsApp, и менеджер поможет
+        оформить оплату другим способом.
       </p>
 
       <div class="payment-status__actions">
-        <a href="account.html" class="btn btn--gold">Мои заказы</a>
-        <a href="catalog.html" class="btn btn--outline">Продолжить покупки</a>
+        <a href="checkout.html" class="btn btn--gold">Попробовать снова</a>
+        <a href="https://wa.me/77071210281" target="_blank" rel="noopener" class="btn btn--outline" id="whatsappLink">Связаться в WhatsApp</a>
       </div>
 
     </div>
   </main>
+
   <footer class="footer">
     <div class="container">
       <div class="footer__top">
@@ -94,36 +126,23 @@
   <script src="js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // Читаем параметры из URL: ?order_id=123&amount=50000
+      // Читаем номер заказа из URL: ?order_id=123
       const params = new URLSearchParams(window.location.search);
       const orderId = params.get('order_id');
-      const amount  = params.get('amount');
 
       if (orderId) {
-        document.getElementById('orderInfo').style.display = 'block';
+        document.getElementById('orderInfo').style.display = 'flex';
         document.getElementById('orderIdDisplay').textContent = '#' + orderId;
-      }
-      if (amount) {
-        document.getElementById('orderAmountDisplay').textContent =
-          parseInt(amount).toLocaleString('ru') + ' ₸';
+
+        // Подставляем номер заказа в сообщение WhatsApp
+        document.getElementById('whatsappLink').href =
+          'https://wa.me/77071210281?text=' +
+          encodeURIComponent('Здравствуйте! Не прошла оплата заказа #' + orderId + '. Помогите, пожалуйста, завершить оплату.');
       }
 
-      // ВАЖНО: корзину целиком НЕ очищаем — купленные товары уже удалены
-      // при оформлении заказа (removeCheckedFromCart в checkout.js).
-      // Страховка на случай прямого редиректа от платёжного провайдера:
-      // если ID выбранных товаров ещё лежат в sessionStorage — удаляем только их.
-      try {
-        const saved = sessionStorage.getItem('checkedCartItems');
-        if (saved) {
-          const ids = new Set(JSON.parse(saved));
-          const cart = JSON.parse(localStorage.getItem('scent_cart') || '[]');
-          if (ids.size > 0) {
-            localStorage.setItem('scent_cart', JSON.stringify(cart.filter(i => !ids.has(String(i.id)))));
-          }
-          sessionStorage.removeItem('checkedCartItems');
-        }
-      } catch (e) { /* при ошибке корзину не трогаем */ }
-      if (typeof updateCartCount === 'function') updateCartCount();
+      // ВАЖНО: localStorage 'scent_cart' и sessionStorage 'checkedCartItems'
+      // на этой странице НЕ трогаем — товары должны остаться в корзине,
+      // чтобы покупатель мог оплатить заказ повторно.
     });
   </script>
 </body>

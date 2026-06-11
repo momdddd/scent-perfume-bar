@@ -163,7 +163,20 @@ async function handlePaymentSuccess(orderId, amount, transactionId) {
   if (typeof removeCheckedFromCart === 'function') {
     removeCheckedFromCart();
   } else {
-    localStorage.removeItem('scent_cart');
+    // Fallback без cart.js: удаляем только ID из sessionStorage.
+    // Если данных о выборе нет — корзину НЕ трогаем (раньше тут
+    // удалялась вся корзина целиком — это и был баг).
+    try {
+      const saved = sessionStorage.getItem('checkedCartItems');
+      if (saved) {
+        const ids = new Set(JSON.parse(saved));
+        const cart = JSON.parse(localStorage.getItem('scent_cart') || '[]');
+        if (ids.size > 0) {
+          localStorage.setItem('scent_cart', JSON.stringify(cart.filter(i => !ids.has(String(i.id)))));
+        }
+        sessionStorage.removeItem('checkedCartItems');
+      }
+    } catch (e) { console.error('[payment] cart cleanup failed:', e); }
   }
   if (typeof updateCartCount === 'function') updateCartCount();
 

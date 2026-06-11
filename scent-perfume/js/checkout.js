@@ -376,7 +376,22 @@ function showSuccess(orderData, dbOrderId) {
   if (typeof removeCheckedFromCart === 'function') {
     removeCheckedFromCart();
   } else {
-    localStorage.removeItem('scent_cart');
+    // Fallback: удаляем вручную по ID из sessionStorage
+    try {
+      const saved = sessionStorage.getItem('checkedCartItems');
+      if (saved) {
+        const ids = new Set(JSON.parse(saved));
+        const cart = JSON.parse(localStorage.getItem('scent_cart') || '[]');
+        const remaining = cart.filter(i => !ids.has(String(i.id)));
+        localStorage.setItem('scent_cart', JSON.stringify(remaining));
+        sessionStorage.removeItem('checkedCartItems');
+      } else {
+        // Совсем нет данных о выборе — НЕ трогаем корзину
+        console.warn('[checkout] checkedCartItems not found in sessionStorage, cart preserved');
+      }
+    } catch (e) {
+      console.error('[checkout] fallback cart clear failed:', e);
+    }
   }
   updateCartCount();
 }

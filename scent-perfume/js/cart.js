@@ -12,6 +12,19 @@
    ============================================= */
 let checkedItems = null;
 
+/**
+ * Зеркалит checkedItems в sessionStorage при каждом изменении,
+ * чтобы выбор переживал переход на checkout.html (там память страницы новая).
+ */
+function persistCheckedItems() {
+  try {
+    sessionStorage.setItem(
+      'checkedCartItems',
+      JSON.stringify(checkedItems ? [...checkedItems] : [])
+    );
+  } catch (e) { /* ignore */ }
+}
+
 /* =============================================
    RENDER CART PAGE
    ============================================= */
@@ -25,6 +38,7 @@ function renderCartPage() {
     cartEmpty.style.display   = 'block';
     cartContent.style.display = 'none';
     checkedItems = null; // reset so next time all are pre-selected
+    sessionStorage.removeItem('checkedCartItems'); // корзина пуста — выбор не нужен
     return;
   }
 
@@ -51,6 +65,9 @@ function renderCartItems(cart) {
   // Remove stale ids (items that were deleted)
   const validIds = new Set(cart.map(item => String(item.id)));
   checkedItems.forEach(id => { if (!validIds.has(id)) checkedItems.delete(id); });
+
+  // Любое изменение выбора проходит через перерисовку — синхронизируем здесь
+  persistCheckedItems();
 
   const allChecked  = cart.length > 0 && cart.every(item => checkedItems.has(String(item.id)));
   const someChecked = cart.some(item => checkedItems.has(String(item.id)));
@@ -109,11 +126,12 @@ function renderCartItems(cart) {
 
     checkAll.addEventListener('change', () => {
       if (checkAll.checked) {
+        // Select all
         cart.forEach(item => checkedItems.add(String(item.id)));
       } else {
+        // Deselect all — clear but keep Set instance (not null!)
         checkedItems.clear();
       }
-      persistCheckedItems();
       renderCartItems(getCart());
       renderCartSummary(getCart());
     });
@@ -124,7 +142,6 @@ function renderCartItems(cart) {
     cb.addEventListener('change', () => {
       if (cb.checked) checkedItems.add(cb.dataset.id);
       else checkedItems.delete(cb.dataset.id);
-      persistCheckedItems();
       renderCartItems(getCart());
       renderCartSummary(getCart());
     });
@@ -180,10 +197,17 @@ function renderCartSummary(cart) {
     checkoutBtn.disabled = selected.length === 0;
     checkoutBtn.style.opacity = selected.length ? '1' : '0.5';
     checkoutBtn.style.pointerEvents = selected.length ? 'auto' : 'none';
-    // Сохраняем выбранные ID перед переходом на страницу оформления
-    checkoutBtn.onclick = () => persistCheckedItems();
+
+    // Сохраняем выбранные ID перед переходом на checkout.html.
+    // onclick (а не addEventListener), чтобы при перерисовках summary
+    // не накапливались дубликаты обработчика.
+    checkoutBtn.onclick = (e) => {
+      e.preventDefault();
+      persistCheckedItems();
+      window.location.href = 'checkout.html';
+    };
   }
-}
+} 
 
 /* =============================================
    BIND SUMMARY ACTION BUTTONS
@@ -266,31 +290,28 @@ function buildWhatsAppCartLink(cart) {
    CHECKED CART HELPERS (used by checkout.js)
    ============================================= */
 
-const CHECKED_KEY = 'scent_checked_ids';
-
-/** Сохраняем выбранные ID в sessionStorage (переживает переход на checkout) */
-function persistCheckedItems() {
-  if (!checkedItems) { sessionStorage.removeItem(CHECKED_KEY); return; }
-  sessionStorage.setItem(CHECKED_KEY, JSON.stringify([...checkedItems]));
-}
-
-/** Загружаем выбранные ID из sessionStorage (на странице checkout) */
-function loadCheckedItems() {
-  const raw = sessionStorage.getItem(CHECKED_KEY);
-  if (!raw) return null;
-  try { return new Set(JSON.parse(raw)); } catch { return null; }
-}
-
 /**
  * Возвращает только выбранные (отмеченные) товары из корзины.
- * Работает и на cart.html (из памяти) и на checkout.html (из sessionStorage).
+ * На странице checkout читает сохранённые ID из sessionStorage.
+ * Если ничего не найдено — возвращает всю корзину.
  */
 function getCheckedCart() {
   const cart = getCart();
-  if (checkedItems && checkedItems.size > 0)
+
+  // На странице корзины checkedItems живёт в памяти
+  if (checkedItems && checkedItems.size > 0) {
     return cart.filter(i => checkedItems.has(String(i.id)));
-  const saved = loadCheckedItems();
-  if (saved && saved.size > 0) return cart.filter(i => saved.has(String(i.id)));
+  }
+
+  // На странице checkout читаем из sessionStorage
+  try {
+    const saved = sessionStorage.getItem('checkedCartItems');
+    if (saved) {
+      const ids = new Set(JSON.parse(saved));
+      if (ids.size > 0) return cart.filter(i => ids.has(String(i.id)));
+    }
+  } catch (e) { /* ignore */ }
+
   return cart;
 }
 
@@ -299,11 +320,27 @@ function getCheckedCart() {
  * Остальные товары остаются в корзине.
  */
 function removeCheckedFromCart() {
-  const ids = (checkedItems && checkedItems.size > 0) ? checkedItems : loadCheckedItems();
-  if (!ids || ids.size === 0) return;
+  // Определяем набор ID: из памяти или из sessionStorage
+  let ids = null;
+
+  if (checkedItems && checkedItems.size > 0) {
+    ids = checkedItems;
+  } else {
+    try {
+      const saved = sessionStorage.getItem('checkedCartItems');
+      if (saved) ids = new Set(JSON.parse(saved));
+    } catch (e) { /* ignore */ }
+  }
+
+  if (!ids || ids.size === 0) {
+    // Нет данных о выборе → не трогаем корзину совсем
+    sessionStorage.removeItem('checkedCartItems');
+    return;
+  }
+
   const remaining = getCart().filter(i => !ids.has(String(i.id)));
   if (checkedItems) { checkedItems.clear(); checkedItems = null; }
-  sessionStorage.removeItem(CHECKED_KEY);
+  sessionStorage.removeItem('checkedCartItems');
   saveCart(remaining);
 }
 

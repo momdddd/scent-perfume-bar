@@ -602,6 +602,11 @@ function bindFilterEvents() {
   if (filtersClose) {
     filtersClose.addEventListener('click', closeFilters);
   }
+
+  const filtersApply = document.getElementById('filtersApply');
+  if (filtersApply) {
+    filtersApply.addEventListener('click', closeFilters);
+  }
 }
 
 /* =============================================
