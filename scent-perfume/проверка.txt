@@ -1,0 +1,21 @@
+1console.log("checked", sessionStorage.getItem("checkedCartItems"));
+
+console.log("cart before", JSON.parse(localStorage.getItem("scent_cart")));
+
+VM1887:1 checked null
+
+VM1887:2 cart before 
+
+2 до оплаты
+
+[payment] init: orderId=28, amount=18600, provider=mock
+
+console.log("cart after", JSON.parse(localStorage.getItem("scent_cart")));
+
+VM2066:1 cart after 
+
+после оплаты уже в payment-success console.log("cart after", JSON.parse(localStorage.getItem("scent_cart")));
+
+VM2086:1 cart after null
+
+undefined

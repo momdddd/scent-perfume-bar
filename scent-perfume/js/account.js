@@ -111,21 +111,32 @@ async function saveProfile() {
   if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Сохраняем...'; }
 
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ full_name: name, phone })
-      }
-    );
+    // UPSERT вместо PATCH: если строки профиля нет (таблицу пересоздавали
+    // после регистрации) — она создастся, если есть — обновится.
+    // PATCH по несуществующей строке возвращает 204 OK и молча не пишет ничего.
+    const doSave = (tok) => fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${tok}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates,return=representation'
+      },
+      body: JSON.stringify({ id: user.id, full_name: name, phone })
+    });
+
+    let res = await doSave(token);
+
+    // Токен мог истечь — обновляем сессию и пробуем один раз ещё
+    if (res.status === 401 && typeof refreshSession === 'function' && await refreshSession()) {
+      res = await doSave(getAccessToken());
+    }
 
     if (!res.ok) throw new Error('Ошибка сохранения');
+
+    // return=representation вернёт сохранённую строку — проверяем по-настоящему
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) throw new Error('Профиль не записался');
 
     // Обновляем имя в шапке кабинета сразу без перезагрузки
     const displayName = name || user.email.split('@')[0];
