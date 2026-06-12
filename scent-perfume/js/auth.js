@@ -65,21 +65,44 @@ function isLoggedIn() {
 
 // ─── AUTH OPERATIONS ─────────────────────────────────────────
 
-async function signUp(email, password, fullName) {
-  const data = await supabaseRequest('/auth/v1/signup', {
+// Куда Supabase отправит человека после клика по кнопке в письме.
+// confirm.html — мини-страница «Email подтверждён, можно закрыть окно».
+// ВАЖНО: этот URL должен быть в allowlist:
+// Supabase → Authentication → URL Configuration → Redirect URLs
+function emailRedirectURL() {
+  return new URL('confirm.html', window.location.href).href;
+}
+
+async function signUp(email, password, fullName, phone) {
+  const data = await supabaseRequest(
+    '/auth/v1/signup?redirect_to=' + encodeURIComponent(emailRedirectURL()), {
     method: 'POST',
     body: JSON.stringify({
       email: email.trim().toLowerCase(),
       password,
-      data: { full_name: fullName.trim() }
+      data: {
+        full_name: fullName.trim(),
+        phone: (phone || '').trim()
+      }
     })
   });
-  // Supabase может потребовать подтверждение email
-  // Если сессия есть — сохраняем
+  // Если подтверждение почты выключено — сессия приходит сразу, сохраняем
   if (data.access_token) {
     saveSession(data);
   }
   return data;
+}
+
+// Повторная отправка письма подтверждения
+async function resendSignupEmail(email) {
+  return supabaseRequest(
+    '/auth/v1/resend?redirect_to=' + encodeURIComponent(emailRedirectURL()), {
+    method: 'POST',
+    body: JSON.stringify({
+      type: 'signup',
+      email: email.trim().toLowerCase()
+    })
+  });
 }
 
 async function signIn(email, password) {

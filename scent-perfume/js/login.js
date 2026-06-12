@@ -1,6 +1,15 @@
 /**
  * Scent Perfume Bar — login.js
- * Логика форм входа и регистрации
+ * Вход, регистрация и ожидание подтверждения email.
+ *
+ * Как работает подтверждение:
+ * 1. signUp → Supabase шлёт письмо, сессии ещё нет → показываем
+ *    экран «Проверьте почту» (никаких редиректов).
+ * 2. Эта вкладка каждые 4 секунды пробует войти с введёнными
+ *    email+паролем. Пока почта не подтверждена, Supabase отвечает
+ *    «Email not confirmed» — ждём дальше.
+ * 3. Человек жмёт кнопку в письме (хоть с телефона) → попытка входа
+ *    проходит → сохраняем сессию, дозаписываем профиль и идём в кабинет.
  */
 
 'use strict';
@@ -13,6 +22,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   initLoginPage();
 });
+
+/* ─── Состояние ожидания подтверждения ────────────────────────── */
+let pendingConfirm = null;        // { email, password, name, phone }
+let confirmPollTimer = null;
+let resendCooldownTimer = null;
+let pollBusy = false;
 
 function initLoginPage() {
   // Tabs
@@ -34,20 +49,36 @@ function initLoginPage() {
     if (e.key === 'Enter') handleLogin();
   });
 
-  // Register submit
+  // Register submit (Enter из любого поля формы)
   document.getElementById('registerBtn').addEventListener('click', handleRegister);
-  document.getElementById('regPassword').addEventListener('keydown', e => {
-    if (e.key === 'Enter') handleRegister();
+  ['regName', 'regEmail', 'regPhone', 'regPassword'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleRegister();
+    });
+  });
+
+  initRegPhoneMask();
+
+  // Экран «Проверьте почту»
+  document.getElementById('resendEmailBtn')?.addEventListener('click', handleResend);
+  document.getElementById('changeEmailBtn')?.addEventListener('click', () => switchTab('register'));
+
+  // Вернулись на вкладку — проверяем сразу, не дожидаясь таймера
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && pendingConfirm) pollConfirmOnce();
   });
 }
 
 function switchTab(tab) {
+  stopWaitingForConfirm();
   const isLogin = tab === 'login';
   document.getElementById('tabLogin').classList.toggle('auth-tab--active', isLogin);
   document.getElementById('tabRegister').classList.toggle('auth-tab--active', !isLogin);
-  document.getElementById('formLogin').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('formLogin').style.display    = isLogin ? 'block' : 'none';
   document.getElementById('formRegister').style.display = isLogin ? 'none' : 'block';
-  document.getElementById('authSuccess').style.display = 'none';
+  document.getElementById('authSuccess').style.display  = 'none';
+  document.getElementById('checkEmailView').style.display = 'none';
+  document.querySelector('.auth-tabs').style.display = 'flex';
   clearAllErrors();
 }
 
@@ -72,7 +103,21 @@ function setLoading(btnId, loading) {
     : (btnId === 'loginBtn' ? 'Войти' : 'Создать аккаунт');
 }
 
-// ─── LOGIN ────────────────────────────────────────────────────
+/* Маска телефона — как на странице оформления заказа */
+function initRegPhoneMask() {
+  const input = document.getElementById('regPhone');
+  if (!input) return;
+  input.addEventListener('input', () => {
+    let val = input.value.replace(/\D/g, '');
+    if (val.startsWith('8')) val = '7' + val.slice(1);
+    if (val.startsWith('7') && val.length > 1) {
+      val = '+7 (' + val.slice(1,4) + ') ' + val.slice(4,7) + '-' + val.slice(7,9) + '-' + val.slice(9,11);
+    } else if (val) { val = '+' + val; }
+    input.value = val.slice(0, 18);
+  });
+}
+
+/* ─── LOGIN ────────────────────────────────────────────────────── */
 async function handleLogin() {
   clearAllErrors();
 
@@ -97,21 +142,26 @@ async function handleLogin() {
     const returnTo = new URLSearchParams(window.location.search).get('from') || 'account.html';
     window.location.href = returnTo;
   } catch (err) {
-    const errEl = document.getElementById('loginError');
-    if (errEl) {
-      errEl.textContent = translateAuthError(err.message);
+    // Аккаунт есть, но почта не подтверждена — показываем экран ожидания,
+    // поллинг сработает как только человек нажмёт кнопку в письме
+    if ((err.message || '').toLowerCase().includes('not confirmed')) {
+      showCheckEmail({ email, password });
+    } else {
+      const errEl = document.getElementById('loginError');
+      if (errEl) errEl.textContent = translateAuthError(err.message);
     }
   } finally {
     setLoading('loginBtn', false);
   }
 }
 
-// ─── REGISTER ─────────────────────────────────────────────────
+/* ─── REGISTER ─────────────────────────────────────────────────── */
 async function handleRegister() {
   clearAllErrors();
 
   const name     = document.getElementById('regName').value.trim();
   const email    = document.getElementById('regEmail').value.trim();
+  const phone    = (document.getElementById('regPhone')?.value || '').trim();
   const password = document.getElementById('regPassword').value;
 
   let valid = true;
@@ -123,6 +173,13 @@ async function handleRegister() {
     setError('regEmail', 'regEmailErr', 'Введите корректный email');
     valid = false;
   }
+  if (phone) {
+    const digits = phone.replace(/\D/g, '');
+    if (digits.length < 10 || digits.length > 12) {
+      setError('regPhone', 'regPhoneErr', 'Неверный номер — или оставьте поле пустым');
+      valid = false;
+    }
+  }
   if (!password || password.length < 6) {
     setError('regPassword', 'regPasswordErr', 'Минимум 6 символов');
     valid = false;
@@ -131,22 +188,25 @@ async function handleRegister() {
 
   setLoading('registerBtn', true);
   try {
-    const result = await signUp(email, password, name);
+    const result = await signUp(email, password, name, phone);
 
-    // Скрываем форму, показываем успех
-    document.getElementById('formRegister').style.display = 'none';
-    document.getElementById('authSuccess').style.display = 'block';
-
-    const successText = document.getElementById('authSuccessText');
+    // Подтверждение почты выключено — сессия пришла сразу
     if (result.access_token) {
-      // Сразу залогинен
-      if (successText) successText.textContent = `${name}, добро пожаловать в Scent Perfume Bar!`;
-    } else {
-      // Нужно подтверждение email
-      if (successText) successText.textContent = `${name}, мы отправили письмо на ${email}. Подтвердите email и войдите.`;
-      document.querySelector('#authSuccess .btn').href = 'login.html';
-      document.querySelector('#authSuccess .btn').textContent = 'Войти';
+      await upsertProfileQuiet(name, phone);
+      window.location.href = 'account.html';
+      return;
     }
+
+    // При включённом подтверждении Supabase возвращает пользователя без
+    // сессии. Пустой identities означает: такой email уже зарегистрирован
+    // (Supabase маскирует это от перебора адресов).
+    const u = result.user || result;
+    if (Array.isArray(u?.identities) && u.identities.length === 0) {
+      setError('regEmail', 'regEmailErr', 'Этот email уже зарегистрирован — попробуйте войти');
+      return;
+    }
+
+    showCheckEmail({ email, password, name, phone });
   } catch (err) {
     const errEl = document.getElementById('regError');
     if (errEl) errEl.textContent = translateAuthError(err.message);
@@ -155,7 +215,120 @@ async function handleRegister() {
   }
 }
 
-// ─── ERROR TRANSLATIONS ───────────────────────────────────────
+/* ─── ОЖИДАНИЕ ПОДТВЕРЖДЕНИЯ EMAIL ─────────────────────────────── */
+
+function showCheckEmail(data) {
+  pendingConfirm = data;
+  document.getElementById('formLogin').style.display    = 'none';
+  document.getElementById('formRegister').style.display = 'none';
+  document.getElementById('authSuccess').style.display  = 'none';
+  document.querySelector('.auth-tabs').style.display = 'none';
+
+  document.getElementById('checkEmailAddr').textContent = data.email;
+  document.getElementById('checkEmailWaiting').style.display   = 'flex';
+  document.getElementById('checkEmailConfirmed').style.display = 'none';
+  const errEl = document.getElementById('checkEmailError');
+  if (errEl) errEl.textContent = '';
+  document.getElementById('checkEmailView').style.display = 'block';
+
+  startConfirmPolling();
+}
+
+function stopWaitingForConfirm() {
+  pendingConfirm = null;
+  if (confirmPollTimer) { clearInterval(confirmPollTimer); confirmPollTimer = null; }
+}
+
+function startConfirmPolling() {
+  if (confirmPollTimer) clearInterval(confirmPollTimer);
+  confirmPollTimer = setInterval(pollConfirmOnce, 4000);
+}
+
+async function pollConfirmOnce() {
+  if (!pendingConfirm || pollBusy) return;
+  pollBusy = true;
+  try {
+    await signIn(pendingConfirm.email, pendingConfirm.password);
+    await onEmailConfirmed();
+  } catch (e) {
+    // «Email not confirmed» — ещё не подтвердили, ждём следующий тик
+  } finally {
+    pollBusy = false;
+  }
+}
+
+async function onEmailConfirmed() {
+  const data = pendingConfirm;
+  stopWaitingForConfirm();
+
+  document.getElementById('checkEmailWaiting').style.display   = 'none';
+  document.getElementById('checkEmailConfirmed').style.display = 'block';
+
+  await upsertProfileQuiet(data?.name, data?.phone);
+  setTimeout(() => { window.location.href = 'account.html'; }, 1200);
+}
+
+/* Дозаписываем профиль (имя/телефон) после первого успешного входа.
+   Телефон из формы регистрации иначе никуда бы не попал: триггер в БД
+   копирует только full_name. */
+async function upsertProfileQuiet(name, phone) {
+  try {
+    const user  = getCurrentUser();
+    const token = getAccessToken();
+    if (!user || !token) return;
+    const meta = user.user_metadata || {};
+    await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        id:        user.id,
+        full_name: name  || meta.full_name || '',
+        phone:     phone || meta.phone     || ''
+      })
+    });
+  } catch { /* не критично — данные можно ввести в кабинете */ }
+}
+
+/* ─── ПИСЬМО ЕЩЁ РАЗ ───────────────────────────────────────────── */
+async function handleResend() {
+  if (!pendingConfirm) return;
+  const btn   = document.getElementById('resendEmailBtn');
+  const errEl = document.getElementById('checkEmailError');
+  if (errEl) errEl.textContent = '';
+  btn.disabled = true;
+  try {
+    await resendSignupEmail(pendingConfirm.email);
+    startResendCooldown(60);
+  } catch (err) {
+    btn.disabled = false;
+    if (errEl) errEl.textContent = translateAuthError(err.message);
+  }
+}
+
+function startResendCooldown(seconds) {
+  const btn = document.getElementById('resendEmailBtn');
+  let left = seconds;
+  btn.disabled = true;
+  btn.textContent = `отправлено (${left})`;
+  if (resendCooldownTimer) clearInterval(resendCooldownTimer);
+  resendCooldownTimer = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(resendCooldownTimer);
+      btn.disabled = false;
+      btn.textContent = 'отправить ещё раз';
+    } else {
+      btn.textContent = `отправлено (${left})`;
+    }
+  }, 1000);
+}
+
+/* ─── ERROR TRANSLATIONS ───────────────────────────────────────── */
 function translateAuthError(msg) {
   if (!msg) return 'Произошла ошибка. Попробуйте ещё раз.';
   const m = msg.toLowerCase();
@@ -167,7 +340,9 @@ function translateAuthError(msg) {
     return 'Этот email уже зарегистрирован. Войдите.';
   if (m.includes('password should be'))
     return 'Пароль слишком короткий (минимум 6 символов)';
-  if (m.includes('rate limit'))
+  if (m.includes('security purposes'))
+    return 'Слишком часто — подождите минуту и попробуйте снова';
+  if (m.includes('rate limit') || m.includes('too many'))
     return 'Слишком много попыток. Подождите немного.';
   return 'Ошибка: ' + msg;
 }

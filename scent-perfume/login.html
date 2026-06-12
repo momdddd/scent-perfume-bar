@@ -114,29 +114,37 @@
         <div id="formRegister" style="display:none">
           <div class="form-group">
             <label class="form-label" for="regName">Имя <span class="req">*</span></label>
-            <input type="text" id="regName" class="form-input" placeholder="Ваше имя" autocomplete="given-name" maxlength="60" />
+            <input type="text" id="regName" class="form-input" placeholder="Как к вам обращаться" autocomplete="given-name" maxlength="60" />
             <span class="form-error" id="regNameErr"></span>
           </div>
           <div class="form-group">
             <label class="form-label" for="regEmail">Email <span class="req">*</span></label>
             <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" autocomplete="email" />
+            <span class="form-hint">Сюда придёт письмо с кнопкой подтверждения</span>
             <span class="form-error" id="regEmailErr"></span>
           </div>
           <div class="form-group">
-            <label class="form-label" for="regPassword">Пароль <span class="req">*</span></label>
+            <label class="form-label" for="regPhone">Телефон <span class="form-label__opt">· необязательно</span></label>
+            <input type="tel" id="regPhone" class="form-input" placeholder="+7 (___) ___-__-__" autocomplete="tel" maxlength="18" />
+            <span class="form-hint">Для связи по заказам — можно добавить позже в кабинете</span>
+            <span class="form-error" id="regPhoneErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regPassword">Придумайте пароль <span class="req">*</span></label>
             <div class="input-password-wrap">
               <input type="password" id="regPassword" class="form-input" placeholder="Минимум 6 символов" autocomplete="new-password" />
               <button class="toggle-password" data-target="regPassword" aria-label="Показать пароль">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               </button>
             </div>
+            <span class="form-hint">Новый пароль для этого сайта — не пароль от вашей почты</span>
             <span class="form-error" id="regPasswordErr"></span>
           </div>
           <span class="form-error auth-error" id="regError"></span>
           <button class="btn btn--gold auth-submit" id="registerBtn">Создать аккаунт</button>
         </div>
 
-        <!-- SUCCESS -->
+        <!-- SUCCESS (вход без подтверждения почты) -->
         <div id="authSuccess" style="display:none" class="auth-success">
           <div class="auth-success__icon">✦</div>
           <h3>Добро пожаловать!</h3>
@@ -144,6 +152,30 @@
           <a href="account.html" class="btn btn--gold" style="width:100%;justify-content:center;margin-top:8px">
             Перейти в кабинет
           </a>
+        </div>
+
+        <!-- CHECK EMAIL — ждём подтверждения почты -->
+        <div id="checkEmailView" style="display:none" class="check-email">
+          <div class="check-email__icon">✉</div>
+          <h3>Проверьте почту</h3>
+          <p>Мы отправили письмо на<br /><strong id="checkEmailAddr"></strong></p>
+          <p class="check-email__hint">
+            Откройте его и нажмите кнопку подтверждения —
+            эта страница обновится сама, ничего нажимать не нужно.
+          </p>
+          <div class="check-email__waiting" id="checkEmailWaiting">
+            <span class="check-email__spinner"></span>
+            <span>Ждём подтверждения…</span>
+          </div>
+          <div class="check-email__confirmed" id="checkEmailConfirmed" style="display:none">
+            ✓ Email подтверждён! Входим в кабинет…
+          </div>
+          <p class="check-email__note">
+            Письмо не пришло? Загляните в «Спам» или
+            <button class="check-email__resend" id="resendEmailBtn" type="button">отправить ещё раз</button>
+          </p>
+          <span class="form-error" id="checkEmailError"></span>
+          <button class="check-email__back" id="changeEmailBtn" type="button">← Указали не тот email? Изменить</button>
         </div>
 
       </div>

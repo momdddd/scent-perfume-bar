@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Подтверждение email — Scent Perfume Bar</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" href="assets/logo-icon.png" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+</head>
+<body class="auth-page" ontouchstart="">
+
+  <main class="confirm-main">
+    <div class="confirm-card">
+
+      <div class="auth-brand" style="justify-content:center">
+        <span class="auth-brand__scent">SCENT</span>
+        <span class="auth-brand__dot">✦</span>
+        <span class="auth-brand__perfume">PERFUME BAR</span>
+      </div>
+
+      <!-- Успех -->
+      <div class="confirm-state" id="stateOk" style="display:none">
+        <div class="confirm-card__icon confirm-card__icon--ok">✓</div>
+        <h1>Email подтверждён!</h1>
+        <p>Аккаунт активирован. Можете закрыть это окно —<br />
+           на компьютере вход произойдёт автоматически.</p>
+        <a href="index.html" class="btn btn--outline confirm-card__btn">Перейти на сайт</a>
+      </div>
+
+      <!-- Ссылка устарела / уже использована -->
+      <div class="confirm-state" id="stateExpired" style="display:none">
+        <div class="confirm-card__icon confirm-card__icon--warn">!</div>
+        <h1>Ссылка устарела</h1>
+        <p>Похоже, ссылка уже использована или истёк её срок.<br />
+           Запросите новое письмо на странице входа.</p>
+        <a href="login.html" class="btn btn--gold confirm-card__btn">К странице входа</a>
+      </div>
+
+      <!-- Открыли напрямую, без письма -->
+      <div class="confirm-state" id="stateNothing" style="display:none">
+        <div class="confirm-card__icon">✉</div>
+        <h1>Подтверждение email</h1>
+        <p>Эта страница открывается по ссылке из письма<br />о подтверждении регистрации.</p>
+        <a href="index.html" class="btn btn--outline confirm-card__btn">На главную</a>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      const show = (id) => {
+        document.querySelectorAll('.confirm-state').forEach(el => el.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+      };
+
+      if (hash.get('error') || hash.get('error_code')) {
+        // otp_expired / access_denied — ссылка устарела или повторно открыта
+        show('stateExpired');
+      } else if (hash.get('access_token')) {
+        show('stateOk');
+        // Бонус: сохраняем сессию в ЭТОМ браузере — если человек
+        // подтверждал с телефона, на телефоне он тоже будет залогинен
+        try {
+          const access  = hash.get('access_token');
+          const refresh = hash.get('refresh_token');
+          const expIn   = parseInt(hash.get('expires_in') || '3600', 10);
+          const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+            headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + access }
+          });
+          if (res.ok) {
+            const user = await res.json();
+            saveSession({
+              access_token:  access,
+              refresh_token: refresh,
+              expires_at:    Math.floor(Date.now() / 1000) + expIn,
+              user
+            });
+          }
+        } catch { /* сообщение уже показано — этого достаточно */ }
+      } else {
+        show('stateNothing');
+      }
+
+      // Убираем токены из адресной строки
+      history.replaceState(null, '', window.location.pathname);
+    });
+  </script>
+</body>
+</html>

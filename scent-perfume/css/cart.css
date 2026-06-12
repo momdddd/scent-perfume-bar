@@ -241,6 +241,7 @@
   transition: 0.15s ease;
 }
 .qty-btn:hover { background: rgba(201,168,76,0.15); color: var(--gold); }
+.qty-btn:disabled { opacity: 0.35; cursor: default; pointer-events: none; }
 .qty-value {
   width: 32px;
   text-align: center;

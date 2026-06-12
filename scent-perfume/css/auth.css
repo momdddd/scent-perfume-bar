@@ -269,6 +269,175 @@ body.auth-page {
   line-height: 1.6;
 }
 
+/* ─── ПОДСКАЗКИ ПОД ПОЛЯМИ ──────────────────── */
+.form-hint {
+  display: block;
+  font-size: 12px;
+  color: var(--white-30);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.form-label__opt {
+  color: var(--white-30);
+  text-transform: none;
+  letter-spacing: 0.05em;
+}
+
+/* ─── ЭКРАН «ПРОВЕРЬТЕ ПОЧТУ» ───────────────── */
+.check-email {
+  text-align: center;
+  padding: 8px 0;
+  animation: fadeIn 0.4s ease;
+}
+.check-email__icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--gold);
+}
+.check-email h3 {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.check-email p {
+  font-size: 0.875rem;
+  color: var(--white-60);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+.check-email strong {
+  color: var(--gold-light);
+  font-weight: 400;
+  word-break: break-all;
+}
+.check-email__hint { color: var(--white-30) !important; font-size: 0.8rem !important; }
+.check-email__waiting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--white-30);
+  font-size: 0.85rem;
+  margin: 22px 0;
+}
+.check-email__spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(201,168,76,0.2);
+  border-top-color: var(--gold);
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.check-email__confirmed {
+  color: #4caf8c;
+  font-size: 0.95rem;
+  margin: 22px 0;
+}
+.check-email__note { font-size: 0.8rem !important; }
+.check-email__resend {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--gold);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--transition-fast);
+}
+.check-email__resend:hover { color: var(--gold-light); }
+.check-email__resend:disabled {
+  color: var(--white-30);
+  text-decoration: none;
+  cursor: default;
+}
+.check-email__back {
+  background: none;
+  border: none;
+  margin-top: 16px;
+  padding: 6px;
+  color: var(--white-30);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+  transition: color var(--transition-fast);
+}
+.check-email__back:hover { color: var(--white-60); }
+
+/* ─── СТРАНИЦА confirm.html ─────────────────── */
+.confirm-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+.confirm-card {
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  background: var(--black-mid);
+  border: 1px solid rgba(201,168,76,0.15);
+  border-radius: var(--radius-lg);
+  padding: 48px 32px;
+  animation: fadeIn 0.4s ease;
+}
+.confirm-card .auth-brand { margin-bottom: 32px; }
+.confirm-card__icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  border: 1px solid rgba(201,168,76,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--gold);
+}
+.confirm-card__icon--ok {
+  background: rgba(76,175,140,0.12);
+  border-color: rgba(76,175,140,0.35);
+  color: #4caf8c;
+}
+.confirm-card__icon--warn {
+  background: rgba(229,115,115,0.1);
+  border-color: rgba(229,115,115,0.3);
+  color: #e57373;
+}
+.confirm-card h1 {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 14px;
+}
+.confirm-card p {
+  font-size: 0.9rem;
+  color: var(--white-60);
+  line-height: 1.65;
+  margin-bottom: 24px;
+}
+.confirm-card__btn {
+  display: inline-flex;
+  justify-content: center;
+  min-width: 200px;
+}
+
 /* ─── MOBILE ─────────────────────────────────── */
 @media (max-width: 767px) {
   .auth-main {

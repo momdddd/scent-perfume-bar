@@ -108,7 +108,7 @@ function renderCartItems(cart) {
       <div class="cart-item__controls">
         <p class="cart-item__price">${(item.price * item.qty).toLocaleString('ru')} ₸</p>
         <div class="cart-item__qty">
-          <button class="qty-btn" data-action="minus" data-id="${item.id}" aria-label="Уменьшить">−</button>
+          <button class="qty-btn" data-action="minus" data-id="${item.id}" aria-label="Уменьшить" ${item.qty <= 1 ? 'disabled' : ''}>−</button>
           <span class="qty-value">${item.qty}</span>
           <button class="qty-btn" data-action="plus" data-id="${item.id}" aria-label="Увеличить">+</button>
         </div>
@@ -160,13 +160,16 @@ function renderCartItems(cart) {
     });
   }
 
-  // Event delegation for qty and remove buttons
-  container.addEventListener('click', function(e) {
+  // Event delegation for qty and remove buttons.
+  // ВАЖНО: onclick, а не addEventListener — контейнер #cartItems живёт
+  // постоянно, и addEventListener при каждой перерисовке добавлял бы ещё
+  // один обработчик: клик по «+» срабатывал бы 2–3–4 раза подряд.
+  container.onclick = function(e) {
     const qtyBtn = e.target.closest('.qty-btn');
     if (qtyBtn) { changeQty(qtyBtn.dataset.id, qtyBtn.dataset.action); return; }
     const removeBtn = e.target.closest('.cart-item__remove');
     if (removeBtn) { removeFromCart(removeBtn.dataset.id); return; }
-  });
+  };
 }
 
 /* =============================================
@@ -222,14 +225,15 @@ function bindCartSummaryButtons(cart) {
 
   const clearBtn = document.getElementById('clearCartBtn');
   if (clearBtn) {
-    clearBtn.addEventListener('click', () => {
+    // onclick — кнопка постоянная, addEventListener копил бы обработчики
+    clearBtn.onclick = () => {
       if (confirm('Очистить всю корзину?')) {
         localStorage.removeItem('scent_cart');
         checkedItems = null;
         updateCartCount();
         renderCartPage();
       }
-    });
+    };
   }
 }
 
@@ -244,8 +248,8 @@ function changeQty(id, action) {
   if (action === 'plus') {
     item.qty = Math.min(item.qty + 1, 99);
   } else {
-    item.qty -= 1;
-    if (item.qty <= 0) { removeFromCart(id); return; }
+    // Минимум 1: «−» на единице ничего не делает, товар не удаляется
+    item.qty = Math.max(item.qty - 1, 1);
   }
 
   saveCart(cart);
