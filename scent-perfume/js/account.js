@@ -163,8 +163,11 @@ async function loadOrders(token) {
   if (!container) return;
 
   try {
+    // Фильтр по user_id обязателен: без него RLS-политика подмешивает
+    // гостевые заказы (user_id IS NULL) в историю каждого пользователя
+    const user = getCurrentUser();
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/orders?select=*,order_items(*)&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/orders?select=*,order_items(*)&user_id=eq.${user.id}&order=created_at.desc`,
       {
         headers: {
           'apikey': SUPABASE_KEY,
