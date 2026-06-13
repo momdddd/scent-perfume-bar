@@ -13,6 +13,49 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
+/* ─── PHONE MASK (общая для всех форм) ───────────────────────── */
+/**
+ * Форматирует ввод в «+7 (XXX) XXX-XX-XX».
+ * Ключевой момент: разделитель НЕ добавляется, пока за ним нет цифры.
+ * Иначе при удалении хвостовой дефис/скобка тут же появлялись бы снова
+ * (число цифр не меняется → маска их дорисовывает) и казались неудаляемыми.
+ */
+function formatPhoneValue(raw) {
+  let d = String(raw).replace(/\D/g, '');
+  if (d.startsWith('8')) d = '7' + d.slice(1);
+  if (!d) return '';
+  if (d[0] !== '7') return '+' + d.slice(0, 15);   // иностранный номер — без маски
+  d = d.slice(0, 11);                              // 7 + 10 цифр
+  let out = '+7';
+  if (d.length > 1) out += ' (' + d.slice(1, 4);
+  if (d.length > 4) out += ') ' + d.slice(4, 7);
+  if (d.length > 7) out += '-' + d.slice(7, 9);
+  if (d.length > 9) out += '-' + d.slice(9, 11);
+  return out;
+}
+
+/**
+ * Вешает маску телефона на input и сохраняет позицию курсора
+ * по числу цифр слева от него (правка в середине не кидает курсор в конец).
+ */
+function attachPhoneMask(input) {
+  if (!input) return;
+  input.addEventListener('input', () => {
+    const caret = input.selectionStart;
+    const digitsLeft = input.value.slice(0, caret).replace(/\D/g, '').length;
+
+    input.value = formatPhoneValue(input.value);
+
+    // вернуть курсор сразу за digitsLeft-й цифрой
+    let pos = 0, seen = 0;
+    while (pos < input.value.length && seen < digitsLeft) {
+      if (/\d/.test(input.value[pos])) seen++;
+      pos++;
+    }
+    input.setSelectionRange(pos, pos);
+  });
+}
+
 /* ─── CART UTILS ─────────────────────────────────────────────── */
 function getCart() {
   try { return JSON.parse(localStorage.getItem('scent_cart')) || []; }

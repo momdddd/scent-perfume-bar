@@ -103,18 +103,9 @@ function setLoading(btnId, loading) {
     : (btnId === 'loginBtn' ? 'Войти' : 'Создать аккаунт');
 }
 
-/* Маска телефона — как на странице оформления заказа */
+/* Маска телефона — общий helper attachPhoneMask() из main.js */
 function initRegPhoneMask() {
-  const input = document.getElementById('regPhone');
-  if (!input) return;
-  input.addEventListener('input', () => {
-    let val = input.value.replace(/\D/g, '');
-    if (val.startsWith('8')) val = '7' + val.slice(1);
-    if (val.startsWith('7') && val.length > 1) {
-      val = '+7 (' + val.slice(1,4) + ') ' + val.slice(4,7) + '-' + val.slice(7,9) + '-' + val.slice(9,11);
-    } else if (val) { val = '+' + val; }
-    input.value = val.slice(0, 18);
-  });
+  attachPhoneMask(document.getElementById('regPhone'));
 }
 
 /* ─── LOGIN ────────────────────────────────────────────────────── */

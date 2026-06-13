@@ -80,7 +80,10 @@ function fillProfileForm(profile, email) {
   const emailInput = document.getElementById('profileEmail');
 
   if (nameInput)  nameInput.value  = profile.full_name || '';
-  if (phoneInput) phoneInput.value = profile.phone     || '';
+  if (phoneInput) {
+    phoneInput.value = formatPhoneValue(profile.phone || ''); // helper в main.js
+    attachPhoneMask(phoneInput);
+  }
   if (emailInput) emailInput.value = email;
 
   // Вешаем обработчик один раз
